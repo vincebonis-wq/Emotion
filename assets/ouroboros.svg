@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <g stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round">
+    <!-- serpent circle -->
+    <path d="M100 22
+             a78 78 0 1 1 -55 23"
+          stroke-width="7"/>
+    <!-- head -->
+    <path d="M45 45
+             q-14 12 -6 26
+             q6 10 20 8
+             q10 -2 12 -12"
+          stroke-width="7"/>
+    <!-- eye -->
+    <circle cx="52" cy="58" r="3.2" fill="currentColor" stroke="none"/>
+    <!-- tail into mouth -->
+    <path d="M64 66 q-8 -6 -16 -4" stroke-width="4"/>
+    <!-- subtle scales / inner ring -->
+    <circle cx="100" cy="100" r="64" stroke-width="1.2" opacity="0.4"/>
+  </g>
+</svg>
