@@ -37,27 +37,38 @@
     <h1>Travail émotionnel</h1>
     <div class="tagline">Revenir à soi, en douceur</div>
 
-    <div id="configWarn" class="config-warn hidden">
-      ⚙️ <b>Connexion pas encore configurée.</b>
-      Le propriétaire doit remplir <code>js/firebase-config.js</code>
-      (voir le README, section Firebase). Aucun compte n'est possible tant
-      que ce n'est pas fait.
-    </div>
+    <div id="configWarn" class="config-warn hidden"></div>
 
     <div id="authForms" class="hidden">
-      <div class="auth-toggle">
-        <button id="tabLogin" class="on">Connexion</button>
-        <button id="tabSignup">Créer un compte</button>
-      </div>
-      <label class="field"><span>Adresse e-mail</span>
-        <input type="email" id="email" autocomplete="email" placeholder="vous@exemple.com"></label>
-      <label class="field"><span>Mot de passe</span>
-        <input type="password" id="password" autocomplete="current-password" placeholder="••••••••"></label>
-      <div class="err" id="authErr"></div>
-      <button class="btn primary block" id="authBtn">Se connecter</button>
-      <p class="small muted" style="margin-top:16px">
-        Vos écrits sont privés et isolés par compte. Doux avec vous : il n'y a rien à réussir ici.
+      <!-- Mode local : toujours disponible, aucun compte requis -->
+      <button class="btn primary block" id="localBtn">Commencer sur cet appareil</button>
+      <p class="small muted" style="margin:10px 0 4px">
+        Tout reste privé, sur votre appareil. Rien à créer, rien à réussir.
       </p>
+
+      <!-- Note affichée si la synchro cloud n'est pas encore configurée -->
+      <div id="cloudNote" class="local-cta small hidden" style="margin-top:16px">
+        ☁️ <b>Synchro multi-appareils (optionnel).</b> Pour retrouver vos données
+        sur plusieurs appareils ou les partager, une configuration Firebase est
+        nécessaire (voir le README). En attendant, le mode local fonctionne
+        parfaitement.
+      </div>
+
+      <!-- Bloc connexion cloud : visible seulement si Firebase est configuré -->
+      <div id="cloudBlock" class="hidden" style="margin-top:20px">
+        <hr class="sep">
+        <p class="small muted center" style="margin-bottom:12px">— ou synchroniser dans le cloud —</p>
+        <div class="auth-toggle">
+          <button id="tabLogin" class="on">Connexion</button>
+          <button id="tabSignup">Créer un compte</button>
+        </div>
+        <label class="field"><span>Adresse e-mail</span>
+          <input type="email" id="email" autocomplete="email" placeholder="vous@exemple.com"></label>
+        <label class="field"><span>Mot de passe</span>
+          <input type="password" id="password" autocomplete="current-password" placeholder="••••••••"></label>
+        <div class="err" id="authErr"></div>
+        <button class="btn ghost block" id="authBtn">Se connecter</button>
+      </div>
     </div>
   </div>
 </section>

@@ -2,21 +2,21 @@
    Ivoire + accent sauge/teal · Cinzel (titres) + Poppins (corps) */
 
 :root{
-  --bg:        #F5F0E6;   /* ivoire */
-  --bg-soft:   #FBF8F1;
-  --surface:   #FFFDF8;
-  --surface-2: #F1EADC;
-  --ink:       #33302B;   /* encre profonde */
-  --ink-soft:  #6B655B;
-  --line:      #E3DACB;
-  /* accent apaisant : sauge / teal profond (remplace l'or) */
-  --accent:      #4E7C6E;
-  --accent-deep: #375A50;
-  --accent-soft: #DCE8E2;
-  --accent-glow: rgba(78,124,110,.16);
-  --danger:    #A9584E;
-  --radius:    16px;
-  --shadow:    0 2px 8px rgba(55,90,80,.06), 0 8px 28px rgba(55,90,80,.07);
+  --bg:        #F8F4EC;   /* ivoire adouci */
+  --bg-soft:   #FCFAF4;
+  --surface:   #FFFDFA;
+  --surface-2: #F1ECE0;
+  --ink:       #423E37;   /* encre douce (moins dure que le noir) */
+  --ink-soft:  #7C766B;
+  --line:      #EAE2D5;
+  /* accent apaisant — surchargé par le sélecteur de couleur (thème par défaut : sauge douce) */
+  --accent:      #7FA89A;
+  --accent-deep: #5E8578;
+  --accent-soft: #E6EFEA;
+  --accent-glow: rgba(127,168,154,.16);
+  --danger:    #B57468;
+  --radius:    18px;
+  --shadow:    0 2px 10px rgba(90,110,100,.05), 0 10px 30px rgba(90,110,100,.06);
   --tscale:    1;         /* contrôle manuel taille texte */
   --maxw:      760px;
 }
@@ -56,7 +56,7 @@ button{font-family:inherit}
 /* ---- Topbar ---- */
 .topbar{
   position:sticky;top:0;z-index:20;
-  background:rgba(245,240,230,.86);backdrop-filter:blur(10px);
+  background:rgba(248,244,236,.86);backdrop-filter:blur(10px);
   border-bottom:1px solid var(--line);
   display:flex;align-items:center;gap:12px;
   padding:14px 18px;margin:0 -18px 8px;
@@ -210,3 +210,28 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .spin{width:22px;height:22px;border:3px solid var(--accent-soft);border-top-color:var(--accent);border-radius:50%;animation:sp 1s linear infinite;margin:20px auto}
 @keyframes sp{to{transform:rotate(360deg)}}
 .affirm{background:var(--accent-soft);border-radius:12px;padding:14px 16px;font-family:'Cinzel',serif;color:var(--accent-deep);text-align:center;margin-bottom:14px}
+
+/* ---- Objectif principal (intention) ---- */
+.objective{
+  position:relative;cursor:pointer;margin:18px 0 22px;
+  background:linear-gradient(135deg,var(--accent-soft),var(--surface));
+  border:1px solid var(--line);border-radius:var(--radius);
+  padding:20px 22px;box-shadow:var(--shadow);transition:.18s;overflow:hidden;
+}
+.objective:hover{border-color:var(--accent)}
+.objective .obj-label{font-size:.72em;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-deep);margin-bottom:6px;font-weight:600}
+.objective .obj-text{font-family:'Cinzel',serif;font-size:1.25em;color:var(--ink);line-height:1.35;white-space:pre-wrap}
+.objective .obj-text.empty{color:var(--ink-soft);font-family:'Poppins',sans-serif;font-size:1em;font-style:italic}
+.objective .obj-edit{position:absolute;top:14px;right:16px;color:var(--accent-deep);opacity:.5;font-size:.9em}
+
+/* ---- Sélecteur de couleurs ---- */
+.swatches{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:6px 0 4px}
+.swatch{width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:.15s;position:relative}
+.swatch:hover{transform:scale(1.08)}
+.swatch.on{border-color:var(--ink)}
+.swatch.on::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1em;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.swatch-name{text-align:center;font-size:.82em;color:var(--ink-soft);margin-top:4px}
+
+/* ---- Badge mode local ---- */
+.mode-badge{display:inline-block;font-size:.68em;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-deep);background:var(--accent-soft);border-radius:999px;padding:2px 10px;margin-top:2px}
+.local-cta{background:var(--accent-soft);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px;text-align:left}
