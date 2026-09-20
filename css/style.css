@@ -56,7 +56,7 @@ button{font-family:inherit}
 /* ---- Topbar ---- */
 .topbar{
   position:sticky;top:0;z-index:20;
-  background:rgba(248,244,236,.86);backdrop-filter:blur(10px);
+  background:var(--topbar,rgba(248,244,236,.86));backdrop-filter:blur(10px);
   border-bottom:1px solid var(--line);
   display:flex;align-items:center;gap:12px;
   padding:14px 18px;margin:0 -18px 8px;
@@ -255,7 +255,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .nextstep .ns-progress{display:flex;gap:5px;margin-top:16px}
 .nextstep .ns-progress i{flex:1;height:4px;border-radius:999px;background:rgba(255,255,255,.3)}
 .nextstep .ns-progress i.on{background:#fff}
-.nextstep.done{background:linear-gradient(135deg,var(--accent-soft),var(--surface));color:var(--ink)}
+.nextstep.done{background:var(--surface);border:1px solid var(--line);color:var(--ink)}
 .nextstep.done h2{color:var(--ink)}.nextstep.done p{color:var(--ink-soft)}
 .nextstep.done .btn{background:var(--accent);color:#fff}
 
@@ -318,11 +318,21 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 /* ==== Encarts pédagogiques (comprendre / ombre / Jung / se connecter) ==== */
 .teach{border-left:3px solid var(--accent);background:var(--bg-soft);border-radius:0 12px 12px 0;padding:13px 16px;margin:12px 0;font-size:.9em;line-height:1.7}
 .teach .tl{font-family:'Cinzel',serif;font-weight:600;font-size:.82em;letter-spacing:.04em;color:var(--accent-deep);display:block;margin-bottom:5px;text-transform:uppercase}
-.teach.jung{border-left-color:#9b8fc4;background:#f3f0f9}
-.teach.jung .tl{color:#6f639e}
-.teach.hides{border-left-color:var(--danger);background:#faf0ec}
-.teach.hides .tl{color:#a2604f}
+.teach.jung{border-left-color:#9b8fc4}
+.teach.jung .tl{color:#8073b0}
+.teach.hides{border-left-color:var(--danger)}
+.teach.hides .tl{color:var(--danger)}
+.teach.belief{border-left-color:#c7a24e}
+.teach.belief .tl{color:#a9853a}
+.teach.cycle{border-left-color:var(--ink-soft)}
+.teach.cycle .tl{color:var(--ink-soft)}
 .teach.connect{border-left-color:var(--accent-deep)}
+/* La vérité plus douce (reframe) */
+.reframe{background:var(--accent-soft);border-radius:12px;padding:14px 16px;margin:14px 0 2px}
+.reframe .tl{font-family:'Cinzel',serif;font-weight:600;font-size:.82em;letter-spacing:.04em;color:var(--accent-deep);display:block;margin-bottom:5px;text-transform:uppercase}
+.reframe > div:last-child{font-family:'Cinzel',serif;color:var(--accent-deep);font-size:1.02em;line-height:1.4}
+/* Sélecteur d'apparence */
+.picker-lbl{font-size:.78em;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);text-align:center;margin-bottom:8px;font-weight:600}
 .lead{font-size:.95em;line-height:1.75}
 
 /* ==== Rôle de l'émotion (check-in) ==== */
@@ -331,4 +341,4 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .emo-role .rline{margin-bottom:10px}
 .emo-role .rk{font-size:.72em;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-deep);display:block;margin-bottom:2px}
 .emo-role .rv{font-size:.9em;line-height:1.65}
-.emo-role .msg{font-family:'Cinzel',serif;font-size:1.05em;color:var(--ink);background:var(--accent-soft);border-radius:10px;padding:10px 14px;margin-bottom:12px}
+.emo-role .msg{font-family:'Cinzel',serif;font-size:1.05em;color:var(--accent-deep);background:var(--accent-soft);border-radius:10px;padding:10px 14px;margin-bottom:12px}

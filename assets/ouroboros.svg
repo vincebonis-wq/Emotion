@@ -1,20 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
-  <g stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round">
-    <!-- serpent circle -->
-    <path d="M100 22
-             a78 78 0 1 1 -55 23"
-          stroke-width="7"/>
-    <!-- head -->
-    <path d="M45 45
-             q-14 12 -6 26
-             q6 10 20 8
-             q10 -2 12 -12"
-          stroke-width="7"/>
-    <!-- eye -->
-    <circle cx="52" cy="58" r="3.2" fill="currentColor" stroke="none"/>
-    <!-- tail into mouth -->
-    <path d="M64 66 q-8 -6 -16 -4" stroke-width="4"/>
-    <!-- subtle scales / inner ring -->
-    <circle cx="100" cy="100" r="64" stroke-width="1.2" opacity="0.4"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+<g stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M31.5 15.2 A38 38 0 1 1 20.6 34.4" stroke-width="7.4"/>
+<path d="M24 27 A38 38 0 0 0 20.6 34.4" stroke-width="4"/>
+<circle cx="50" cy="50" r="27" stroke-width="1" opacity=".3"/>
+</g>
+<path d="M31.5 15.2 C24 9, 12 11.5, 11 21.5 C10.3 29, 16 34, 23 32.6 C28.4 31.5, 31 27, 30 22.5 Z" fill="currentColor"/>
+<circle cx="18.5" cy="19.5" r="2.1" fill="#fff"/>
 </svg>

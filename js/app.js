@@ -10,14 +10,19 @@
 'use strict';
 
 /* ---------- Ouroboros (inline, hérite currentColor) ---------- */
-const OUROBOROS = `<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g stroke="currentColor" fill="none" stroke-linecap="round">
-<path d="M100 22 a78 78 0 1 1 -55 23" stroke-width="7"/>
-<path d="M45 45 q-14 12 -6 26 q6 10 20 8 q10 -2 12 -12" stroke-width="7"/>
-<circle cx="52" cy="58" r="3.2" fill="currentColor" stroke="none"/>
-<path d="M64 66 q-8 -6 -16 -4" stroke-width="4"/>
-<circle cx="100" cy="100" r="64" stroke-width="1.2" opacity="0.5"/>
-</g></svg>`;
+const OUROBOROS = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<!-- corps : anneau qui s'effile vers la queue -->
+<path d="M31.5 15.2 A38 38 0 1 1 20.6 34.4" stroke-width="7.4"/>
+<path d="M24 27 A38 38 0 0 0 20.6 34.4" stroke-width="4"/>
+<!-- anneau interne (profondeur) -->
+<circle cx="50" cy="50" r="27" stroke-width="1" opacity=".3"/>
+</g>
+<!-- tête -->
+<path d="M31.5 15.2 C24 9, 12 11.5, 11 21.5 C10.3 29, 16 34, 23 32.6 C28.4 31.5, 31 27, 30 22.5 Z" fill="currentColor"/>
+<!-- oeil -->
+<circle cx="18.5" cy="19.5" r="2.1" fill="var(--surface,#fff)"/>
+</svg>`;
 
 /* ---------- Helpers DOM ---------- */
 const $ = (s, r = document) => r.querySelector(s);
@@ -57,6 +62,17 @@ function modal(node, { title } = {}) {
 /* ============================================================
    Thèmes de couleur (doux)
    ============================================================ */
+/* Ambiances de fond (base) — personnalisation complète du fond d'écran */
+const BG_THEMES = {
+  ivoire: { nm: 'Ivoire',    sw: '#F8F4EC', bg: '#F8F4EC', bgSoft: '#FCFAF4', surface: '#FFFDFA', surface2: '#F1ECE0', ink: '#423E37', inkSoft: '#7C766B', line: '#EAE2D5', topbar: 'rgba(248,244,236,.86)' },
+  blanc:  { nm: 'Blanc doux', sw: '#FBFAF7', bg: '#FBFAF7', bgSoft: '#FFFFFF', surface: '#FFFFFF', surface2: '#F1EFEA', ink: '#3C3A35', inkSoft: '#7A756C', line: '#ECE8E0', topbar: 'rgba(251,250,247,.88)' },
+  sable:  { nm: 'Sable',     sw: '#F1E8D6', bg: '#F1E8D6', bgSoft: '#F8F1E3', surface: '#FCF8EE', surface2: '#E9DCC4', ink: '#443D30', inkSoft: '#7C7360', line: '#E2D4BB', topbar: 'rgba(241,232,214,.86)' },
+  brume:  { nm: 'Brume',     sw: '#EBEFEE', bg: '#EBEFEE', bgSoft: '#F5F8F7', surface: '#FCFDFD', surface2: '#E1E8E6', ink: '#39403E', inkSoft: '#727A78', line: '#DBE3E1', topbar: 'rgba(235,239,238,.86)' },
+  rose:   { nm: 'Rosé',      sw: '#F5ECEC', bg: '#F5ECEC', bgSoft: '#FBF5F5', surface: '#FEFBFB', surface2: '#ECDCDC', ink: '#443A3A', inkSoft: '#7E7070', line: '#E9D7D7', topbar: 'rgba(245,236,236,.86)' },
+  lin:    { nm: 'Lin',       sw: '#EFEBE3', bg: '#EFEBE3', bgSoft: '#F6F3EC', surface: '#FBF9F4', surface2: '#E5DED1', ink: '#3F3B34', inkSoft: '#79736A', line: '#E1D9CB', topbar: 'rgba(239,235,227,.86)' },
+  nuit:   { nm: 'Nuit douce', dark: true, sw: '#2A2D33', bg: '#23262B', bgSoft: '#2A2E34', surface: '#2E333A', surface2: '#3A4048', ink: '#ECE7DE', inkSoft: '#A9A399', line: '#3D434B', topbar: 'rgba(35,38,43,.9)' },
+};
+
 const PALETTES = {
   sauge:   { nm: 'Sauge',   sw: '#7FA89A', accent: '#7FA89A', deep: '#5E8578', soft: '#E6EFEA', glow: 'rgba(127,168,154,.18)' },
   brume:   { nm: 'Brume',   sw: '#84A9B5', accent: '#84A9B5', deep: '#5F8894', soft: '#E5EEF1', glow: 'rgba(132,169,181,.18)' },
@@ -73,7 +89,7 @@ const State = {
   mode: null,          // 'local' | 'cloud'
   user: null,          // {uid, email}
   db: null,
-  prefs: { textScale: 1, theme: 'sauge' },
+  prefs: { textScale: 1, theme: 'sauge', bg: 'ivoire' },
   config: {},          // objective, fsPattern, fsAffirmations, fsMonth…
   entries: [],
   unsub: [],
@@ -120,6 +136,15 @@ function applyTheme() {
   r.setProperty('--accent-glow', t.glow);
   const meta = document.querySelector('meta[name=theme-color]'); if (meta) meta.content = t.accent;
 }
+function applyBg() {
+  const t = BG_THEMES[State.prefs.bg] || BG_THEMES.ivoire;
+  const r = document.documentElement.style;
+  r.setProperty('--bg', t.bg); r.setProperty('--bg-soft', t.bgSoft);
+  r.setProperty('--surface', t.surface); r.setProperty('--surface-2', t.surface2);
+  r.setProperty('--ink', t.ink); r.setProperty('--ink-soft', t.inkSoft);
+  r.setProperty('--line', t.line); r.setProperty('--topbar', t.topbar);
+  document.documentElement.classList.toggle('is-dark', !!t.dark);
+}
 function loadLocalPrefs() { try { Object.assign(State.prefs, JSON.parse(localStorage.getItem('emotion_prefs') || '{}')); } catch (_) {} }
 function savePrefsLocal() { try { localStorage.setItem('emotion_prefs', JSON.stringify(State.prefs)); } catch (_) {} }
 
@@ -127,6 +152,7 @@ window.addEventListener('DOMContentLoaded', () => {
   injectMarks();
   loadLocalPrefs();
   applyTextScale();
+  applyBg();
   applyTheme();
 
   bindAuthUI();
@@ -235,7 +261,8 @@ function syncPrefsFromConfig() {
   let changed = false;
   if (typeof State.config.textScale === 'number') { State.prefs.textScale = State.config.textScale; changed = true; }
   if (State.config.theme && PALETTES[State.config.theme]) { State.prefs.theme = State.config.theme; changed = true; }
-  if (changed) { savePrefsLocal(); applyTextScale(); applyTheme(); }
+  if (State.config.bg && BG_THEMES[State.config.bg]) { State.prefs.bg = State.config.bg; changed = true; }
+  if (changed) { savePrefsLocal(); applyTextScale(); applyBg(); applyTheme(); }
 }
 
 function showApp() {
@@ -328,17 +355,31 @@ function openTextSize() {
 }
 
 function openThemePicker() {
-  const sw = el('div', { class: 'swatches' });
+  // Ambiance du fond
+  const bgRow = el('div', { class: 'swatches' });
+  Object.entries(BG_THEMES).forEach(([id, t]) => {
+    const s = el('button', { class: 'swatch' + (State.prefs.bg === id ? ' on' : ''), title: t.nm,
+      style: `background:${t.sw};border-color:${t.dark ? '#555' : 'transparent'}`, onclick: () => {
+        State.prefs.bg = id; applyBg(); savePrefsLocal(); saveConfig({ bg: id });
+        $$('.swatch', bgRow).forEach((x) => x.classList.remove('on')); s.classList.add('on');
+      } });
+    bgRow.append(s);
+  });
+  // Accent
+  const accRow = el('div', { class: 'swatches' });
   Object.entries(PALETTES).forEach(([id, t]) => {
     const s = el('button', { class: 'swatch' + (State.prefs.theme === id ? ' on' : ''), title: t.nm,
       style: `background:${t.sw}`, onclick: () => {
         State.prefs.theme = id; applyTheme(); savePrefsLocal(); saveConfig({ theme: id });
-        $$('.swatch', sw).forEach((x) => x.classList.remove('on')); s.classList.add('on');
+        $$('.swatch', accRow).forEach((x) => x.classList.remove('on')); s.classList.add('on');
       } });
-    sw.append(s);
+    accRow.append(s);
   });
-  const box = el('div', {}, el('p', { class: 'muted small center' }, 'Choisissez la couleur qui vous apaise.'), sw);
-  modal(box, { title: 'Couleur de l’app' });
+  const box = el('div', {},
+    el('div', { class: 'picker-lbl' }, 'Ambiance du fond'), bgRow,
+    el('div', { class: 'picker-lbl', style: 'margin-top:18px' }, 'Couleur d’accent'), accRow,
+    el('p', { class: 'muted small center', style: 'margin-top:16px' }, 'Choisissez ce qui vous apaise. Tout est modifiable à tout moment.'));
+  modal(box, { title: 'Apparence' });
 }
 
 function openMenu() {
@@ -399,7 +440,7 @@ function render() {
   const s = $('#screen'); s.innerHTML = '';
   if (currentRoute === 'home') return renderHome(s);
   if (currentRoute.startsWith('atelier:')) return viewAtelier(s, currentRoute.slice(8));
-  const fn = { bilan: viewBilan, bilanresult: viewBilanResultRoute, patterns: viewPatterns, futureself: viewFutureSelf, checkin: viewCheckin, reparenting: viewReparenting, regulation: viewRegulation, awareness: viewAwareness, expressive: viewExpressive }[currentRoute];
+  const fn = { bilan: viewBilan, bilanresult: viewBilanResultRoute, patterns: viewPatterns, shadow: viewShadow, futureself: viewFutureSelf, checkin: viewCheckin, reparenting: viewReparenting, regulation: viewRegulation, awareness: viewAwareness, expressive: viewExpressive }[currentRoute];
   (fn || renderHome)(s);
 }
 
@@ -450,6 +491,7 @@ function renderHome(s) {
   renderNextStep(s);
   renderBilanTeaser(s);
   renderThemeSection(s);
+  renderDeepSection(s);
   renderPatternsTeaser(s);
   renderExploration(s);
 
@@ -521,6 +563,24 @@ function renderThemeSection(s) {
   s.append(grid);
 }
 
+/* Explorations profondes (Jung & LePera) */
+function renderDeepSection(s) {
+  s.append(el('div', { class: 'sec-head' }, el('h2', {}, 'Explorations profondes'),
+    el('span', { class: 'small muted' }, 'Jung & reparentage')));
+  const grid = el('div', { class: 'modgrid' });
+  const nShadow = entriesOf('shadow').length;
+  grid.append(el('button', { class: 'modcard', onclick: () => go('shadow') },
+    el('div', { class: 'ic' }, '🌑'),
+    el('div', { class: 'nm' }, 'Travail de l’ombre'),
+    el('div', { class: 'ds' }, 'Exercice jungien : récupérer une part de soi mise de côté (5 temps).'),
+    nShadow ? el('div', { class: 'small muted', style: 'margin-top:2px' }, nShadow + ' passage' + (nShadow > 1 ? 's' : '')) : null));
+  grid.append(el('button', { class: 'modcard', onclick: () => go('reparenting') },
+    el('div', { class: 'ic' }, '🤍'),
+    el('div', { class: 'nm' }, 'Enfant intérieur'),
+    el('div', { class: 'ds' }, 'Reparentage : les 4 piliers, revenir au corps, écouter le besoin.')));
+  s.append(grid);
+}
+
 /* Aperçu patterns */
 function renderPatternsTeaser(s) {
   s.append(el('div', { class: 'sec-head' }, el('h2', {}, 'Mes patterns'),
@@ -536,6 +596,7 @@ function renderExploration(s) {
     el('span', { class: 'small muted' }, 'journaux & pratiques')));
   const grid = el('div', { class: 'modgrid' });
   Object.entries(MODULES).forEach(([id, m]) => {
+    if (id === 'reparenting') return; // affiché dans « Explorations profondes »
     const locked = ADVANCED.includes(id) && !bilanDone();
     const n = entriesOf(id).length;
     grid.append(el('button', { class: 'modcard' + (locked ? ' locked' : ''),
@@ -931,10 +992,16 @@ function viewAtelier(s, themeId) {
     el('p', { class: 'lead' }, a.intro));
   if (a.hides) comprendre.append(el('div', { class: 'teach hides' },
     el('span', { class: 'tl' }, '🫥 Ce que ça protège'), el('div', { class: 'pre' }, a.hides)));
+  if (a.belief) comprendre.append(el('div', { class: 'teach belief' },
+    el('span', { class: 'tl' }, '🔎 La croyance centrale'), el('div', {}, el('i', {}, '« ' + a.belief + ' »'))));
+  if (a.cycle) comprendre.append(el('div', { class: 'teach cycle' },
+    el('span', { class: 'tl' }, '🔄 Le cercle qui l’entretient'), el('div', { class: 'pre' }, a.cycle)));
   if (a.jung) comprendre.append(el('div', { class: 'teach jung' },
     el('span', { class: 'tl' }, '☯ Le regard de Jung'), el('div', { class: 'pre' }, a.jung)));
   if (a.connect) comprendre.append(el('div', { class: 'teach connect' },
     el('span', { class: 'tl' }, '🤲 Se connecter avant de transformer'), el('div', { class: 'pre' }, a.connect)));
+  if (a.reframe) comprendre.append(el('div', { class: 'reframe' },
+    el('span', { class: 'tl' }, '🌱 La vérité plus douce'), el('div', {}, a.reframe)));
   s.append(comprendre);
 
   // 2 — Se reconnaître (cases)
@@ -1029,6 +1096,46 @@ function viewPatterns(s) {
     const chips = card.lastChild;
     emos.slice(0, 8).forEach(([e, n]) => chips.append(el('span', { class: 'chip' }, e + ' · ' + n)));
     s.append(card);
+  }
+}
+
+/* ============================================================
+   Travail de l'ombre (Jung) — exercice guidé
+   ============================================================ */
+function viewShadow(s) {
+  const sh = window.SHADOW; if (!sh) { go('home'); return; }
+  viewHead(s, 'Travail de l’ombre', 'Un exercice jungien · en douceur');
+  s.append(el('div', { class: 'card' },
+    el('p', { class: 'lead' }, sh.intro),
+    el('div', { class: 'teach connect' }, el('span', { class: 'tl' }, '🕯️ Avant de commencer'), el('div', {}, sh.reminder))));
+
+  const tas = [];
+  sh.steps.forEach((st, i) => {
+    const ta = el('textarea', { placeholder: 'Prends ton temps…' });
+    tas.push(ta);
+    s.append(el('div', { class: 'card' },
+      el('div', { class: 'step-block' }, el('span', { class: 'sb-num' }, i + 1), el('span', { class: 'sb-title' }, st.t)),
+      el('p', { class: 'lead', style: 'margin-bottom:10px' }, st.p),
+      ta));
+  });
+
+  s.append(el('div', { class: 'reframe' }, el('span', { class: 'tl' }, '🌱 Pour refermer'), el('div', {}, sh.outro)));
+  s.append(el('button', { class: 'btn primary block', onclick: async () => {
+    if (!tas.some((t) => t.value.trim())) { toast('Écris au moins une étape.'); return; }
+    await addEntry('shadow', { trait: tas[0].value.trim(), answers: tas.map((t) => t.value.trim()) });
+    go('shadow');
+  } }, 'Enregistrer mon exploration'));
+
+  const past = entriesOf('shadow');
+  if (past.length) {
+    s.append(el('h3', { style: 'margin:16px 0 8px' }, 'Mes explorations'));
+    const wrap = el('div', {});
+    past.forEach((e) => wrap.append(el('div', { class: 'log-item' },
+      el('div', { class: 'lh' }, el('span', { class: 'ld' }, fmtDateTime(e.createdAt)),
+        el('button', { class: 'del', onclick: () => { if (confirm('Supprimer ?')) delEntry(e.id); } }, 'supprimer')),
+      ...(e.answers || []).filter(Boolean).map((ans, k) => el('div', { class: 'entry' },
+        el('div', { class: 'em' }, (sh.steps[k] ? sh.steps[k].t : '')), el('div', { class: 'pre' }, ans))))));
+    s.append(wrap);
   }
 }
 
