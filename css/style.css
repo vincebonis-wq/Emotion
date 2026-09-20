@@ -491,3 +491,24 @@ img,svg{max-width:100%}
     border:1px solid var(--line);border-bottom:none;border-radius:16px 16px 0 0}
   .wrap{padding-left:24px;padding-right:24px}
 }
+
+/* ============================================================
+   v9 — Blocs dépliables (En savoir plus / approches)
+   ============================================================ */
+.more{border:1px solid var(--line);border-radius:12px;margin-top:14px;background:var(--bg-soft);overflow:hidden}
+.more>summary{cursor:pointer;padding:13px 16px;font-family:'Cinzel',serif;font-weight:600;font-size:.9em;
+  color:var(--accent-deep);list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.more>summary::-webkit-details-marker{display:none}
+.more>summary::after{content:'⌄';font-size:1.2em;transition:transform .2s;opacity:.7}
+.more[open]>summary::after{transform:rotate(180deg)}
+.more>.more-body{padding:2px 16px 16px}
+.more>.more-body>.teach:first-child{margin-top:4px}
+
+.approach-head{font-family:'Cinzel',serif;font-weight:600;font-size:.85em;color:var(--accent-deep);margin:16px 0 6px}
+.approach{border:1px solid var(--line);border-radius:10px;margin:8px 0;background:var(--surface);overflow:hidden}
+.approach>summary{cursor:pointer;padding:11px 14px;font-size:.9em;list-style:none;display:flex;align-items:center;gap:6px}
+.approach>summary::-webkit-details-marker{display:none}
+.approach>summary::after{content:'+';margin-left:auto;font-size:1.1em;color:var(--accent-deep);opacity:.7}
+.approach[open]>summary::after{content:'–'}
+.approach>summary .ap-who{color:var(--ink-soft);font-size:.85em}
+.approach>.more-body{padding:0 14px 13px;color:var(--ink)}

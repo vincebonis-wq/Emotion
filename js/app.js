@@ -488,15 +488,30 @@ function render() {
   // Gate : tant que le bilan initial n'est pas fait, on reste sur l'onboarding.
   const gated = !bilanDone();
   const tabbar = $('.tabbar'); if (tabbar) tabbar.classList.toggle('hidden', gated);
-  if (gated && !['onboarding', 'bilan', 'bilanresult'].includes(currentRoute)) currentRoute = 'onboarding';
+  if (gated && !['onboarding', 'bilan', 'bilanresult', 'intro'].includes(currentRoute)) currentRoute = 'onboarding';
   if (!gated && currentRoute === 'onboarding') currentRoute = 'home'; // bilan chargé (cloud) → on ouvre
   syncTabbar();
   const s = $('#screen'); s.innerHTML = '';
   if (currentRoute === 'home') return renderHome(s);
   if (currentRoute === 'onboarding') return viewOnboarding(s);
+  if (currentRoute === 'intro') return viewIntro(s);
   if (currentRoute.startsWith('atelier:')) return viewAtelier(s, currentRoute.slice(8));
   const fn = { explore: viewExplore, suivi: viewSuivi, bilan: viewBilan, bilanresult: viewBilanResultRoute, patterns: viewPatterns, shadow: viewShadow, futureself: viewFutureSelf, checkin: viewCheckin, reparenting: viewReparenting, regulation: viewRegulation, awareness: viewAwareness, expressive: viewExpressive }[currentRoute];
   (fn || renderHome)(s);
+}
+
+/* ============================================================
+   Introduction au travail émotionnel
+   ============================================================ */
+function viewIntro(s) {
+  const I = window.INTRO || { sections: [] };
+  viewHead(s, I.title || 'Comprendre', I.sub || '');
+  I.sections.forEach((sec, i) => {
+    s.append(el('div', { class: 'card' },
+      el('h3', {}, sec.t),
+      el('p', { class: 'lead pre', style: 'margin:0' }, sec.body)));
+  });
+  s.append(el('button', { class: 'btn primary block', onclick: () => back() }, 'J’ai compris, revenir'));
 }
 
 /* ============================================================
@@ -509,6 +524,8 @@ function viewOnboarding(s) {
     el('div', { class: 'hh-date' }, 'Ton espace de travail émotionnel')));
 
   s.append(el('div', { class: 'ornament' }, el('span', {}, '❦')));
+
+  s.append(el('button', { class: 'btn ghost block', style: 'margin-bottom:16px', onclick: () => go('intro') }, '📖 Comment ça marche ? — Lire l’introduction'));
 
   // 1) Poser l'intention (facultatif mais mis en avant)
   const ta = el('textarea', { placeholder: 'Ex. Apprendre à accueillir mes émotions sans me juger.', style: 'min-height:80px' });
@@ -684,6 +701,10 @@ function renderMonthGrid(days) {
    ============================================================ */
 function viewExplore(s) {
   s.append(el('div', { class: 'vhead' }, el('div', { class: 'vt' }, el('h2', {}, 'Explorer'), el('div', { class: 'sub' }, 'Bilan · thèmes · pratiques'))));
+  s.append(el('div', { class: 'card', onclick: () => go('intro'), style: 'cursor:pointer;display:flex;align-items:center;gap:14px' },
+    el('div', { style: 'font-size:1.6em;flex:none' }, '📖'),
+    el('div', {}, el('div', { style: 'font-family:Cinzel,serif;font-weight:600' }, 'Comprendre le travail émotionnel'),
+      el('div', { class: 'small muted' }, 'Comment ça marche, la méthode, comment avancer'))));
   renderNextStep(s);
   renderBilanTeaser(s);
   renderThemeSection(s);
@@ -1196,26 +1217,40 @@ function viewAtelier(s, themeId) {
   if (!t || !a) { go('home'); return; }
   viewHead(s, t.nm, 'Atelier guidé · ' + t.ic);
 
-  // 1 — Comprendre (en profondeur)
+  // 1 — Comprendre (essentiel visible, profondeur repliée)
   const comprendre = el('div', { class: 'card' },
     el('div', { class: 'step-block' }, el('span', { class: 'sb-num' }, '1'), el('span', { class: 'sb-title' }, 'Comprendre')),
     el('p', { class: 'lead' }, a.intro));
-  if (a.hides) comprendre.append(el('div', { class: 'teach hides' },
-    el('span', { class: 'tl' }, '🫥 Ce que ça protège'), el('div', { class: 'pre' }, a.hides)));
-  if (a.belief) comprendre.append(el('div', { class: 'teach belief' },
-    el('span', { class: 'tl' }, '🔎 La croyance centrale'), el('div', {}, el('i', {}, '« ' + a.belief + ' »'))));
-  if (a.cycle) comprendre.append(el('div', { class: 'teach cycle' },
-    el('span', { class: 'tl' }, '🔄 Le cercle qui l’entretient'), el('div', { class: 'pre' }, a.cycle)));
-  if (a.wound) comprendre.append(el('div', { class: 'teach wound' },
-    el('span', { class: 'tl' }, '🩹 La blessure dessous'), el('div', { class: 'pre' }, a.wound)));
-  if (a.jung) comprendre.append(el('div', { class: 'teach jung' },
-    el('span', { class: 'tl' }, '☯ Le regard de Jung'), el('div', { class: 'pre' }, a.jung)));
-  if (a.converge) comprendre.append(el('div', { class: 'teach converge' },
-    el('span', { class: 'tl' }, '📚 Ce qu’en disent d’autres approches'), el('div', { class: 'pre' }, a.converge)));
-  if (a.connect) comprendre.append(el('div', { class: 'teach connect' },
-    el('span', { class: 'tl' }, '🤲 Se connecter avant de transformer'), el('div', { class: 'pre' }, a.connect)));
   if (a.reframe) comprendre.append(el('div', { class: 'reframe' },
     el('span', { class: 'tl' }, '🌱 La vérité plus douce'), el('div', {}, a.reframe)));
+
+  // « En savoir plus » — tout le contenu approfondi, à dérouler
+  const more = el('div', { class: 'more-body' });
+  if (a.hides) more.append(el('div', { class: 'teach hides' },
+    el('span', { class: 'tl' }, '🫥 Ce que ça protège'), el('div', { class: 'pre' }, a.hides)));
+  if (a.belief) more.append(el('div', { class: 'teach belief' },
+    el('span', { class: 'tl' }, '🔎 La croyance centrale'), el('div', {}, el('i', {}, '« ' + a.belief + ' »'))));
+  if (a.cycle) more.append(el('div', { class: 'teach cycle' },
+    el('span', { class: 'tl' }, '🔄 Le cercle qui l’entretient'), el('div', { class: 'pre' }, a.cycle)));
+  if (a.wound) more.append(el('div', { class: 'teach wound' },
+    el('span', { class: 'tl' }, '🩹 La blessure dessous'), el('div', { class: 'pre' }, a.wound)));
+  if (a.jung) more.append(el('div', { class: 'teach jung' },
+    el('span', { class: 'tl' }, '☯ Le regard de Jung'), el('div', { class: 'pre' }, a.jung)));
+  if (a.connect) more.append(el('div', { class: 'teach connect' },
+    el('span', { class: 'tl' }, '🤲 Se connecter avant de transformer'), el('div', { class: 'pre' }, a.connect)));
+  // Approches qui éclairent ce thème (descriptions longues, dépliables)
+  const apps = (window.THEME_APPROACHES || {})[themeId] || [];
+  if (apps.length) {
+    more.append(el('div', { class: 'approach-head' }, '📚 Approches qui éclairent ce thème'));
+    apps.forEach((id) => {
+      const ap = (window.APPROACHES || {})[id]; if (!ap) return;
+      more.append(el('details', { class: 'approach' },
+        el('summary', {}, el('b', {}, ap.nm), el('span', { class: 'ap-who' }, ' · ' + ap.who)),
+        el('div', { class: 'more-body pre', style: 'font-size:.9em;line-height:1.7' }, ap.body)));
+    });
+  }
+  comprendre.append(el('details', { class: 'more' },
+    el('summary', {}, 'En savoir plus'), more));
   s.append(comprendre);
 
   // 2 — Se reconnaître (cases)
