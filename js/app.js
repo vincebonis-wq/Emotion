@@ -74,6 +74,7 @@ const BG_THEMES = {
 };
 
 const PALETTES = {
+  or:      { nm: 'Or',      sw: '#B4924E', accent: '#B4924E', deep: '#8C6E37', soft: '#EFE6D0', glow: 'rgba(180,146,78,.20)' },
   sauge:   { nm: 'Sauge',   sw: '#7FA89A', accent: '#7FA89A', deep: '#5E8578', soft: '#E6EFEA', glow: 'rgba(127,168,154,.18)' },
   brume:   { nm: 'Brume',   sw: '#84A9B5', accent: '#84A9B5', deep: '#5F8894', soft: '#E5EEF1', glow: 'rgba(132,169,181,.18)' },
   lavande: { nm: 'Lavande', sw: '#A198C6', accent: '#A198C6', deep: '#7E74A6', soft: '#ECE9F3', glow: 'rgba(161,152,198,.18)' },
@@ -89,7 +90,7 @@ const State = {
   mode: null,          // 'local' | 'cloud'
   user: null,          // {uid, email}
   db: null,
-  prefs: { textScale: 1, theme: 'sauge', bg: 'ivoire' },
+  prefs: { textScale: 1, theme: 'or', bg: 'ivoire' },
   config: {},          // objective, fsPattern, fsAffirmations, fsMonth…
   entries: [],
   unsub: [],
@@ -338,6 +339,7 @@ function bilanDone() { return hasEntry('bilan'); }
 function bindAppChrome() {
   $('#btnText').onclick = openTextSize;
   $('#btnMenu').onclick = openMenu;
+  $$('.tabbar .tab').forEach((b) => (b.onclick = () => goTab(b.dataset.tab)));
 }
 
 function openTextSize() {
@@ -433,20 +435,35 @@ function importData() {
    Router
    ============================================================ */
 let currentRoute = 'home';
-function go(route) { currentRoute = route; window.scrollTo(0, 0); render(); }
+let navHistory = [];
+const TABS = ['home', 'explore', 'suivi'];
+function tabOf(route) {
+  if (route === 'home') return 'home';
+  if (route === 'suivi' || route === 'patterns') return 'suivi';
+  return 'explore';
+}
+function go(route) { navHistory.push(currentRoute); currentRoute = route; window.scrollTo(0, 0); render(); }
+function back() { currentRoute = navHistory.pop() || tabOf(currentRoute); window.scrollTo(0, 0); render(); }
+function goTab(tab) { navHistory = []; currentRoute = tab; window.scrollTo(0, 0); render(); }
 
 function render() {
   if (!State.mode) return;
+  syncTabbar();
   const s = $('#screen'); s.innerHTML = '';
   if (currentRoute === 'home') return renderHome(s);
   if (currentRoute.startsWith('atelier:')) return viewAtelier(s, currentRoute.slice(8));
-  const fn = { bilan: viewBilan, bilanresult: viewBilanResultRoute, patterns: viewPatterns, shadow: viewShadow, futureself: viewFutureSelf, checkin: viewCheckin, reparenting: viewReparenting, regulation: viewRegulation, awareness: viewAwareness, expressive: viewExpressive }[currentRoute];
+  const fn = { explore: viewExplore, suivi: viewSuivi, bilan: viewBilan, bilanresult: viewBilanResultRoute, patterns: viewPatterns, shadow: viewShadow, futureself: viewFutureSelf, checkin: viewCheckin, reparenting: viewReparenting, regulation: viewRegulation, awareness: viewAwareness, expressive: viewExpressive }[currentRoute];
   (fn || renderHome)(s);
+}
+
+function syncTabbar() {
+  const tab = tabOf(currentRoute);
+  $$('.tabbar .tab').forEach((b) => b.classList.toggle('on', b.dataset.tab === tab));
 }
 
 function viewHead(parent, title, sub) {
   parent.append(el('div', { class: 'vhead' },
-    el('button', { class: 'back', title: 'Retour', onclick: () => go('home') }, '‹'),
+    el('button', { class: 'back', title: 'Retour', onclick: back }, '‹'),
     el('div', { class: 'vt' }, el('h2', {}, title), sub ? el('div', { class: 'sub' }, sub) : null)));
 }
 
@@ -472,30 +489,149 @@ function editObjective() {
   const m = modal(box, { title: 'Mon objectif principal' });
 }
 
-/* ---------- Accueil (guidé, en sections) ---------- */
+/* ============================================================
+   ACCUEIL — minimal : direction + émotion à travailler + régularité
+   ============================================================ */
 function renderHome(s) {
   const hour = new Date().getHours();
   const hi = hour < 6 ? 'Douce nuit' : hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonne soirée';
-  s.append(el('div', { class: 'greeting' },
-    el('div', { class: 'hi' }, hi),
-    el('div', { class: 'date' }, fmtDate(new Date())),
-    State.mode === 'local' ? el('span', { class: 'mode-badge' }, '📱 Local') : null));
+  s.append(el('div', { class: 'home-hero' },
+    el('div', { class: 'hh-mark', html: OUROBOROS }),
+    el('div', { class: 'hh-hi' }, hi),
+    el('div', { class: 'hh-date' }, fmtDate(new Date()))));
 
-  renderObjective(s);
+  renderDirection(s);
+  renderFocus(s);
+  renderStreakCompact(s);
+}
 
-  if (State.config.fsAffirmations) {
-    const affs = String(State.config.fsAffirmations).split('\n').map((x) => x.trim()).filter(Boolean);
-    if (affs.length) s.append(el('div', { class: 'affirm' }, '“' + affs[new Date().getDate() % affs.length] + '”'));
+/* La direction (objectif principal) — pièce maîtresse */
+function renderDirection(s) {
+  const obj = State.config.objective;
+  s.append(el('div', { class: 'ornament' }, el('span', {}, '❦')));
+  s.append(el('div', { class: 'direction', onclick: editObjective },
+    el('div', { class: 'dir-label' }, 'Ma direction'),
+    el('div', { class: 'dir-text' + (obj ? '' : ' empty') }, obj || 'Toucher pour poser mon intention…'),
+    el('div', { class: 'dir-edit' }, '✎')));
+}
+
+/* L'émotion / le thème que je travaille en ce moment */
+function renderFocus(s) {
+  const fid = State.config.focus || topTheme();
+  s.append(el('div', { class: 'sec-head' }, el('h2', {}, 'Ce que je travaille'),
+    el('button', { class: 'link', onclick: editFocus }, (State.config.focus ? 'Changer' : 'Choisir') + ' →')));
+  if (!fid || !THEMES[fid]) {
+    s.append(el('div', { class: 'card center', onclick: editFocus, style: 'cursor:pointer' },
+      el('p', { class: 'muted', style: 'margin:0' }, '🎯 Choisis l’émotion ou le pattern que tu veux travailler en ce moment.')));
+    return;
   }
+  const t = THEMES[fid];
+  const done = entriesOf('atelier').filter((a) => a.theme === fid).length;
+  s.append(el('div', { class: 'focus-card', onclick: () => go('atelier:' + fid) },
+    el('div', { class: 'fc-ic' }, t.ic),
+    el('div', { class: 'fc-body' },
+      el('div', { class: 'fc-name' }, t.nm),
+      el('div', { class: 'fc-desc' }, t.desc),
+      done ? el('div', { class: 'fc-meta' }, '✓ ' + done + ' passage' + (done > 1 ? 's' : '')) : null),
+    el('div', { class: 'fc-go' }, 'Travailler ›')));
+}
+function editFocus() {
+  const lb = latestBilan();
+  const order = Object.keys(THEMES).sort((a, b) => (lb && lb.scores ? (lb.scores[b] || 0) - (lb.scores[a] || 0) : 0));
+  const list = el('div', {});
+  order.forEach((id) => {
+    const t = THEMES[id];
+    list.append(el('button', { class: 'pick-row' + (State.config.focus === id ? ' on' : ''), onclick: () => {
+      saveConfig({ focus: id }); m.close(); render(); toast('Focus défini');
+    } }, el('span', { class: 'pr-ic' }, t.ic), el('span', {}, el('b', {}, t.short), el('span', { class: 'muted small' }, ' — ' + t.desc))));
+  });
+  const box = el('div', {}, el('p', { class: 'small muted' }, 'Sur quoi veux-tu concentrer ton travail en ce moment ? (modifiable à tout moment)'), list);
+  const m = modal(box, { title: 'Ce que je travaille' });
+}
 
+/* ---------- Suivi de régularité (streak) ---------- */
+function practiceDays() {
+  const set = new Set();
+  State.entries.forEach((e) => { if (e.date) set.add(e.date); else if (e.createdAt) set.add(new Date(e.createdAt).toISOString().slice(0, 10)); });
+  return set;
+}
+function computeStreak() {
+  const days = practiceDays();
+  const iso = (d) => d.toISOString().slice(0, 10);
+  const today = new Date(); today.setHours(12, 0, 0, 0);
+  const todayStr = iso(today);
+  const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+  let cur = 0;
+  // point de départ : aujourd'hui si pratiqué, sinon hier (pour ne pas casser avant la fin de journée)
+  let start = days.has(todayStr) ? new Date(today) : (days.has(iso(yesterday)) ? new Date(yesterday) : null);
+  if (start) { const d = new Date(start); while (days.has(iso(d))) { cur++; d.setDate(d.getDate() - 1); } }
+  // meilleure série
+  let best = 0; const sorted = [...days].sort();
+  let run = 0, prev = null;
+  sorted.forEach((ds) => {
+    const d = new Date(ds);
+    if (prev && (d - prev) === 86400000) run++; else run = 1;
+    best = Math.max(best, run); prev = d;
+  });
+  return { current: cur, best, total: days.size, today: days.has(todayStr), days };
+}
+function last7() {
+  const days = practiceDays(); const out = [];
+  const t = new Date(); t.setHours(12, 0, 0, 0);
+  for (let i = 6; i >= 0; i--) { const d = new Date(t); d.setDate(t.getDate() - i); out.push({ label: ['D', 'L', 'M', 'M', 'J', 'V', 'S'][d.getDay()], on: days.has(d.toISOString().slice(0, 10)) }); }
+  return out;
+}
+function renderStreakCompact(s) {
+  const st = computeStreak();
+  const dots = el('div', { class: 'streak-week' });
+  last7().forEach((d) => dots.append(el('div', { class: 'sd' + (d.on ? ' on' : '') }, el('span', {}, d.label))));
+  s.append(el('div', { class: 'streak-card', onclick: () => go('suivi') },
+    el('div', { class: 'sc-flame' }, '🔥'),
+    el('div', { class: 'sc-body' },
+      el('div', { class: 'sc-num' }, st.current + ' jour' + (st.current > 1 ? 's' : '')),
+      el('div', { class: 'sc-sub' }, st.today ? 'Pratiqué aujourd’hui ✓' : 'Pas encore aujourd’hui')),
+    dots));
+}
+function renderStreakFull(s) {
+  const st = computeStreak();
+  s.append(el('div', { class: 'card' },
+    el('div', { class: 'streak-stats' },
+      el('div', { class: 'ss' }, el('div', { class: 'ss-n' }, st.current), el('div', { class: 'ss-l' }, 'jours d’affilée')),
+      el('div', { class: 'ss' }, el('div', { class: 'ss-n' }, st.best), el('div', { class: 'ss-l' }, 'meilleure série')),
+      el('div', { class: 'ss' }, el('div', { class: 'ss-n' }, st.total), el('div', { class: 'ss-l' }, 'jours au total'))),
+    renderMonthGrid(st.days)));
+}
+function renderMonthGrid(days) {
+  const wrap = el('div', { class: 'month-grid' });
+  const t = new Date(); t.setHours(12, 0, 0, 0);
+  for (let i = 27; i >= 0; i--) { const d = new Date(t); d.setDate(t.getDate() - i); wrap.append(el('div', { class: 'mg' + (days.has(d.toISOString().slice(0, 10)) ? ' on' : '') })); }
+  return el('div', {}, el('div', { class: 'small muted', style: 'margin:14px 0 8px' }, '4 dernières semaines'), wrap);
+}
+
+/* ============================================================
+   EXPLORER — le hub (tout le reste)
+   ============================================================ */
+function viewExplore(s) {
+  s.append(el('div', { class: 'vhead' }, el('div', { class: 'vt' }, el('h2', {}, 'Explorer'), el('div', { class: 'sub' }, 'Bilan · thèmes · pratiques'))));
   renderNextStep(s);
   renderBilanTeaser(s);
   renderThemeSection(s);
   renderDeepSection(s);
-  renderPatternsTeaser(s);
   renderExploration(s);
+  s.append(el('p', { class: 'small muted center', style: 'margin-top:20px' }, 'Méthode inspirée de Dr. Nicole LePera — How to Do the Work.'));
+}
 
-  s.append(el('p', { class: 'small muted center', style: 'margin-top:24px' }, 'Méthode inspirée de Dr. Nicole LePera — How to Do the Work.'));
+/* ============================================================
+   SUIVI — régularité + progression + patterns
+   ============================================================ */
+function viewSuivi(s) {
+  s.append(el('div', { class: 'vhead' }, el('div', { class: 'vt' }, el('h2', {}, 'Mon suivi'), el('div', { class: 'sub' }, 'Régularité · progression · patterns'))));
+  s.append(el('div', { class: 'sec-head' }, el('h2', {}, 'Régularité')));
+  renderStreakFull(s);
+  const lb = latestBilan();
+  if (lb) { s.append(el('div', { class: 'sec-head' }, el('h2', {}, 'Progression'))); renderProgression(s); }
+  s.append(el('div', { class: 'sec-head' }, el('h2', {}, 'Mes patterns')));
+  renderPatternsInto(s);
 }
 
 /* Carte « Mon prochain pas » */
@@ -1056,6 +1192,9 @@ function viewAtelier(s, themeId) {
    ============================================================ */
 function viewPatterns(s) {
   viewHead(s, 'Mes patterns', 'Ce qui relie tes exercices');
+  renderPatternsInto(s);
+}
+function renderPatternsInto(s) {
   const insights = [];
   const sig = computeThemeSignals();
   const ranked = Object.entries(sig).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);

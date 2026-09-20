@@ -9,11 +9,11 @@
   --ink:       #423E37;   /* encre douce (moins dure que le noir) */
   --ink-soft:  #7C766B;
   --line:      #EAE2D5;
-  /* accent apaisant — surchargé par le sélecteur de couleur (thème par défaut : sauge douce) */
-  --accent:      #7FA89A;
-  --accent-deep: #5E8578;
-  --accent-soft: #E6EFEA;
-  --accent-glow: rgba(127,168,154,.16);
+  /* accent — DA OCCULT (or) par défaut, surchargé par le sélecteur */
+  --accent:      #B4924E;
+  --accent-deep: #8C6E37;
+  --accent-soft: #EFE6D0;
+  --accent-glow: rgba(180,146,78,.20);
   --danger:    #B57468;
   --radius:    18px;
   --shadow:    0 2px 10px rgba(90,110,100,.05), 0 10px 30px rgba(90,110,100,.06);
@@ -342,3 +342,94 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .emo-role .rk{font-size:.72em;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-deep);display:block;margin-bottom:2px}
 .emo-role .rv{font-size:.9em;line-height:1.65}
 .emo-role .msg{font-family:'Cinzel',serif;font-size:1.05em;color:var(--accent-deep);background:var(--accent-soft);border-radius:10px;padding:10px 14px;margin-bottom:12px}
+
+/* ============================================================
+   v5 — Accueil premium (DA OCCULT) + navigation + régularité
+   ============================================================ */
+
+/* Barre d'onglets */
+.tabbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:40;
+  display:flex;justify-content:space-around;align-items:center;
+  background:var(--topbar,rgba(248,244,236,.92));backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);
+  padding:8px 8px calc(8px + env(safe-area-inset-bottom));
+}
+.tabbar .tab{
+  flex:1;background:none;border:none;cursor:pointer;color:var(--ink-soft);
+  display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;transition:.15s;
+}
+.tabbar .tab .ti{font-size:1.25em;line-height:1}
+.tabbar .tab .tl{font-size:.68em;letter-spacing:.06em;font-weight:500}
+.tabbar .tab.on{color:var(--accent-deep)}
+.tabbar .tab.on .ti{transform:translateY(-1px)}
+.wrap{padding-bottom:96px}
+
+/* Accueil : hero */
+.home-hero{text-align:center;padding:30px 0 6px}
+.home-hero .hh-mark{width:52px;height:52px;margin:0 auto 14px;color:var(--accent)}
+.home-hero .hh-mark svg{width:100%;height:100%}
+.home-hero .hh-hi{font-family:'Cinzel',serif;font-size:1.7em;font-weight:600}
+.home-hero .hh-date{color:var(--ink-soft);font-size:.82em;text-transform:capitalize;letter-spacing:.02em}
+
+/* Ornement OCCULT */
+.ornament{display:flex;align-items:center;justify-content:center;gap:14px;margin:22px 0 16px;color:var(--accent)}
+.ornament::before,.ornament::after{content:'';height:1px;width:60px;background:linear-gradient(90deg,transparent,var(--accent))}
+.ornament::after{background:linear-gradient(90deg,var(--accent),transparent)}
+.ornament span{font-size:.9em;opacity:.8}
+
+/* La direction */
+.direction{
+  position:relative;text-align:center;cursor:pointer;
+  background:
+    radial-gradient(120% 120% at 50% 0%, var(--accent-soft), transparent 70%),
+    var(--surface);
+  border:1px solid var(--line);border-radius:var(--radius);
+  padding:28px 24px;box-shadow:var(--shadow);transition:.18s;
+}
+.direction:hover{border-color:var(--accent)}
+.direction .dir-label{font-size:.7em;letter-spacing:.22em;text-transform:uppercase;color:var(--accent-deep);margin-bottom:12px;font-weight:600}
+.direction .dir-text{font-family:'Cinzel',serif;font-size:1.5em;line-height:1.35;color:var(--ink)}
+.direction .dir-text.empty{font-family:'Poppins',sans-serif;font-size:1em;font-style:italic;color:var(--ink-soft)}
+.direction .dir-edit{position:absolute;top:14px;right:16px;color:var(--accent-deep);opacity:.45;font-size:.9em}
+
+/* Carte focus */
+.focus-card{
+  display:flex;align-items:center;gap:16px;cursor:pointer;text-align:left;width:100%;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:20px;box-shadow:var(--shadow);transition:.18s;
+}
+.focus-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.focus-card .fc-ic{font-size:2em;line-height:1;flex:none}
+.focus-card .fc-body{flex:1;min-width:0}
+.focus-card .fc-name{font-family:'Cinzel',serif;font-weight:600;font-size:1.1em}
+.focus-card .fc-desc{font-size:.84em;color:var(--ink-soft);line-height:1.4}
+.focus-card .fc-meta{font-size:.75em;color:var(--accent-deep);margin-top:4px}
+.focus-card .fc-go{font-size:.85em;color:var(--accent-deep);font-weight:600;flex:none}
+
+/* Sélecteur de focus */
+.pick-row{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;border:1px solid var(--line);background:var(--bg-soft);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:.12s}
+.pick-row:hover{border-color:var(--accent)}
+.pick-row.on{background:var(--accent-soft);border-color:var(--accent)}
+.pick-row .pr-ic{font-size:1.3em;flex:none;line-height:1}
+
+/* Régularité — compact */
+.streak-card{display:flex;align-items:center;gap:14px;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);margin-top:6px}
+.streak-card:hover{border-color:var(--accent)}
+.streak-card .sc-flame{font-size:1.7em;flex:none}
+.streak-card .sc-body{flex:1;min-width:0}
+.streak-card .sc-num{font-family:'Cinzel',serif;font-weight:600;font-size:1.15em}
+.streak-card .sc-sub{font-size:.8em;color:var(--ink-soft)}
+.streak-week{display:flex;gap:5px;flex:none}
+.streak-week .sd{width:22px;height:22px;border-radius:7px;background:var(--surface-2);display:flex;align-items:center;justify-content:center}
+.streak-week .sd span{font-size:.6em;color:var(--ink-soft)}
+.streak-week .sd.on{background:var(--accent)}
+.streak-week .sd.on span{color:#fff}
+
+/* Régularité — complet */
+.streak-stats{display:flex;justify-content:space-around;text-align:center;margin-bottom:6px}
+.streak-stats .ss-n{font-family:'Cinzel',serif;font-size:1.9em;color:var(--accent-deep)}
+.streak-stats .ss-l{font-size:.72em;color:var(--ink-soft);letter-spacing:.04em}
+.month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.month-grid .mg{aspect-ratio:1;border-radius:6px;background:var(--surface-2)}
+.month-grid .mg.on{background:var(--accent)}
