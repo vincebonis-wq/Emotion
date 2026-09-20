@@ -314,3 +314,21 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .step-block{margin-bottom:18px}
 .step-block .sb-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-family:'Cinzel',serif;font-size:.85em;margin-right:8px}
 .step-block .sb-title{font-family:'Cinzel',serif;font-weight:600;font-size:1em}
+
+/* ==== Encarts pédagogiques (comprendre / ombre / Jung / se connecter) ==== */
+.teach{border-left:3px solid var(--accent);background:var(--bg-soft);border-radius:0 12px 12px 0;padding:13px 16px;margin:12px 0;font-size:.9em;line-height:1.7}
+.teach .tl{font-family:'Cinzel',serif;font-weight:600;font-size:.82em;letter-spacing:.04em;color:var(--accent-deep);display:block;margin-bottom:5px;text-transform:uppercase}
+.teach.jung{border-left-color:#9b8fc4;background:#f3f0f9}
+.teach.jung .tl{color:#6f639e}
+.teach.hides{border-left-color:var(--danger);background:#faf0ec}
+.teach.hides .tl{color:#a2604f}
+.teach.connect{border-left-color:var(--accent-deep)}
+.lead{font-size:.95em;line-height:1.75}
+
+/* ==== Rôle de l'émotion (check-in) ==== */
+.emo-role{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0;box-shadow:var(--shadow)}
+.emo-role h4{font-family:'Cinzel',serif;margin:0 0 8px;font-size:1em}
+.emo-role .rline{margin-bottom:10px}
+.emo-role .rk{font-size:.72em;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-deep);display:block;margin-bottom:2px}
+.emo-role .rv{font-size:.9em;line-height:1.65}
+.emo-role .msg{font-family:'Cinzel',serif;font-size:1.05em;color:var(--ink);background:var(--accent-soft);border-radius:10px;padding:10px 14px;margin-bottom:12px}

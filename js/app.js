@@ -611,23 +611,48 @@ function viewFutureSelf(s) {
     e.grateful ? el('div', { class: 'entry' }, el('div', { class: 'em' }, 'Reconnaissant·e de'), el('div', { class: 'ebody pre' }, e.grateful)) : null)));
 }
 
+/* Affiche le rôle de l'émotion (psychologie + Jung) sous les chips */
+function showEmotionRole(box, family, emo) {
+  const r = (window.EMOTION_ROLES || {})[family];
+  box.innerHTML = '';
+  if (!r) return;
+  box.append(el('div', { class: 'emo-role' },
+    el('h4', {}, 'Le rôle de « ' + emo + ' »'),
+    el('div', { class: 'msg' }, '“' + r.message + '”'),
+    el('div', { class: 'rline' }, el('span', { class: 'rk' }, 'Sa fonction'), el('div', { class: 'rv' }, r.role)),
+    el('div', { class: 'rline' }, el('span', { class: 'rk' }, '☯ Vu par Jung'), el('div', { class: 'rv' }, r.jung)),
+    el('div', { class: 'rline' }, el('span', { class: 'rk' }, '🤲 L’accueillir'), el('div', { class: 'rv' }, r.welcome))));
+}
+
 /* ============================================================
    2) Check-in émotionnel
    ============================================================ */
 function viewCheckin(s) {
   viewHead(s, 'Check-in émotionnel', 'Nommer pour apaiser');
   let selected = null;
+  // Rappel : se connecter avant de transformer
+  s.append(el('div', { class: 'card' },
+    el('div', { class: 'teach connect', style: 'margin:0' },
+      el('span', { class: 'tl' }, '🤲 ' + CONNECT.title),
+      el('div', { class: 'pre' }, CONNECT.body))));
+
   const card = el('div', { class: 'card' });
   card.append(el('p', { class: 'small muted' }, 'Quelle émotion est présente, là, maintenant ? La nommer aide déjà le système nerveux à s’apaiser.'));
+  const roleBox = el('div', {});
   Object.entries(WHEEL).forEach(([fam, emos]) => {
     const grp = el('div', { class: 'family-grp' }, el('div', { class: 'fam-label' }, fam));
     const chips = el('div', { class: 'chips' });
     emos.forEach((emo) => {
-      const c = el('button', { class: 'chip', onclick: () => { $$('.chip', card).forEach((x) => x.classList.remove('sel')); c.classList.add('sel'); selected = { family: fam, emotion: emo }; } }, emo);
+      const c = el('button', { class: 'chip', onclick: () => {
+        $$('.chip', card).forEach((x) => x.classList.remove('sel'));
+        c.classList.add('sel'); selected = { family: fam, emotion: emo };
+        showEmotionRole(roleBox, fam, emo);
+      } }, emo);
       chips.append(c);
     });
     grp.append(chips); card.append(grp);
   });
+  card.append(roleBox);
   const rangeVal = el('span', { class: 'rangeval' }, '5');
   const range = el('input', { type: 'range', min: 1, max: 10, value: 5, oninput: (e) => (rangeVal.textContent = e.target.value) });
   const note = el('textarea', { placeholder: 'Où je le sens dans le corps ? Qu’est-ce qui l’a déclenché ? (optionnel)', style: 'min-height:80px' });
@@ -900,10 +925,17 @@ function viewAtelier(s, themeId) {
   if (!t || !a) { go('home'); return; }
   viewHead(s, t.nm, 'Atelier guidé · ' + t.ic);
 
-  // 1 — Comprendre
-  s.append(el('div', { class: 'card' },
+  // 1 — Comprendre (en profondeur)
+  const comprendre = el('div', { class: 'card' },
     el('div', { class: 'step-block' }, el('span', { class: 'sb-num' }, '1'), el('span', { class: 'sb-title' }, 'Comprendre')),
-    el('p', { class: 'small', style: 'line-height:1.7' }, a.intro)));
+    el('p', { class: 'lead' }, a.intro));
+  if (a.hides) comprendre.append(el('div', { class: 'teach hides' },
+    el('span', { class: 'tl' }, '🫥 Ce que ça protège'), el('div', { class: 'pre' }, a.hides)));
+  if (a.jung) comprendre.append(el('div', { class: 'teach jung' },
+    el('span', { class: 'tl' }, '☯ Le regard de Jung'), el('div', { class: 'pre' }, a.jung)));
+  if (a.connect) comprendre.append(el('div', { class: 'teach connect' },
+    el('span', { class: 'tl' }, '🤲 Se connecter avant de transformer'), el('div', { class: 'pre' }, a.connect)));
+  s.append(comprendre);
 
   // 2 — Se reconnaître (cases)
   const checks = [];
