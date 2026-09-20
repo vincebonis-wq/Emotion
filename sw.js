@@ -1,6 +1,6 @@
 // Service worker — stratégie réseau-d'abord (network-first) avec repli cache.
 // Incrémenter CACHE_VERSION à chaque déploiement pour rafraîchir le cache.
-const CACHE_VERSION = 'emotion-v9';
+const CACHE_VERSION = 'emotion-v10';
 const CORE = [
   './',
   './index.html',

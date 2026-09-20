@@ -1107,7 +1107,7 @@ function viewBilan(s) {
   viewHead(s, 'Le bilan', done ? 'Refaire pour mesurer mon évolution' : 'Un point de départ tout doux');
   // Intro / choix
   const start = el('div', { class: 'card' },
-    el('p', { class: 'small muted' }, done ? 'Tu as déjà un bilan. En refaire un régulièrement (toutes les 2-4 semaines) permet de voir ton évolution. Il n’y a pas de bonne note — juste toi, à cet instant.' : 'Réponds honnêtement, sans réfléchir trop longtemps. Il n’y a ni bonne ni mauvaise réponse. ~5 min, 16 questions.'),
+    el('p', { class: 'small muted' }, done ? 'Tu as déjà un bilan. En refaire un régulièrement (toutes les 2-4 semaines) permet de voir ton évolution. Il n’y a pas de bonne note — juste toi, à cet instant.' : 'Réponds honnêtement, sans réfléchir trop longtemps. Il n’y a ni bonne ni mauvaise réponse. ~8 min, 32 questions.'),
     el('button', { class: 'btn primary block', onclick: () => runBilan(s) }, done ? 'Refaire mon bilan' : 'Commencer'));
   s.append(start);
   if (done) renderProgression(s);
@@ -1126,11 +1126,13 @@ function runBilan(s) {
     const prog = el('div', { class: 'q-progress' }, el('i', { style: `width:${(i / BILAN.length) * 100}%` }));
     const card = el('div', { class: 'q-card' },
       el('div', { class: 'q-count' }, 'Question ' + (i + 1) + ' / ' + BILAN.length),
-      it.scenario ? el('div', { class: 'q-scenario' }, '💭 ' + it.text) : null,
-      el('div', { class: 'q-text' }, it.scenario ? 'À quel point cela te touche ?' : it.text));
+      it.scenario ? el('div', { class: 'q-scenario' },
+        el('div', { class: 'q-scenario-lbl' }, '💭 Imagine cette situation'),
+        el('div', { class: 'q-scenario-txt' }, it.text)) : null,
+      el('div', { class: 'q-text' }, it.scenario ? 'Sur le moment, à quel point cela te touche ?' : it.text));
     const scale = el('div', { class: 'q-scale' });
     BILAN_SCALE.forEach((lbl, v) => {
-      scale.append(el('button', { class: 'q-opt' + (answers[i] === v ? ' sel' : ''), onclick: () => { answers[i] = v; next(); } }, lbl));
+      scale.append(el('button', { class: 'q-opt' + (answers[i] === v ? ' sel' : ''), onclick: (e) => { answers[i] = v; e.currentTarget.blur(); next(); } }, lbl));
     });
     card.append(scale);
     if (i > 0) card.append(el('button', { class: 'btn ghost', style: 'margin-top:16px', onclick: () => { i--; paint(); } }, '‹ Précédent'));
