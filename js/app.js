@@ -10,19 +10,7 @@
 'use strict';
 
 /* ---------- Ouroboros (inline, hérite currentColor) ---------- */
-const OUROBOROS = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-<!-- corps : anneau qui s'effile vers la queue -->
-<path d="M31.5 15.2 A38 38 0 1 1 20.6 34.4" stroke-width="7.4"/>
-<path d="M24 27 A38 38 0 0 0 20.6 34.4" stroke-width="4"/>
-<!-- anneau interne (profondeur) -->
-<circle cx="50" cy="50" r="27" stroke-width="1" opacity=".3"/>
-</g>
-<!-- tête -->
-<path d="M31.5 15.2 C24 9, 12 11.5, 11 21.5 C10.3 29, 16 34, 23 32.6 C28.4 31.5, 31 27, 30 22.5 Z" fill="currentColor"/>
-<!-- oeil -->
-<circle cx="18.5" cy="19.5" r="2.1" fill="var(--surface,#fff)"/>
-</svg>`;
+const OUROBOROS = `<img src="assets/logo.png" alt="" class="mark-img" loading="eager" decoding="async">`;
 
 /* ---------- Helpers DOM ---------- */
 const $ = (s, r = document) => r.querySelector(s);

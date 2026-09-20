@@ -516,3 +516,11 @@ img,svg{max-width:100%}
 .approach[open]>summary::after{content:'–'}
 .approach>summary .ap-who{color:var(--ink-soft);font-size:.85em}
 .approach>.more-body{padding:0 14px 13px;color:var(--ink)}
+
+/* v11 — Logo image (emblème ombre & lumière) */
+.mark-img{width:100%;height:100%;object-fit:contain;display:block}
+.backdrop .mark-img{width:min(70vw,520px);height:auto;object-fit:contain}
+.home-hero .hh-mark{height:64px}
+.home-hero .hh-mark .mark-img{height:100%;width:auto;margin:0 auto}
+.auth-card .mark{width:auto;height:88px}
+.auth-card .mark .mark-img{height:100%;width:auto;margin:0 auto}
