@@ -1123,20 +1123,40 @@ function viewRegulation(s) {
   viewHead(s, 'Régulation', 'Système nerveux · cohérence cardiaque');
   s.append(el('details', { class: 'more' }, el('summary', {}, '⏸️ ' + PAUSE.title + ' (rappel)'),
     el('div', { class: 'more-body' }, el('div', { class: 'pre', style: 'font-size:.9em;line-height:1.7' }, PAUSE.body))));
+  const PHASE = 5000; // 5 s inspire / 5 s expire
   const orb = el('div', { class: 'breathe-orb out' }, 'Prêt·e ?');
   const timer = el('div', { class: 'breathe-timer' }, '3 min · 5s inspire / 5s expire');
-  let running = false, iv = null, endAt = 0;
+  let running = false, iv = null, endAt = 0, startAt = 0, curPhase = null;
   const toggle = el('button', { class: 'btn primary', onclick: () => (running ? stop() : start()) }, 'Commencer');
+
+  function setPhase(ph) {
+    curPhase = ph;
+    // l'animation (transition 5s) démarre pile au changement de phase => corrélée
+    orb.classList.toggle('in', ph === 'in');
+    orb.classList.toggle('out', ph === 'out');
+    orb.textContent = ph === 'in' ? 'Inspire…' : 'Expire…';
+  }
   function tick() {
     const now = Date.now(), left = Math.max(0, Math.ceil((endAt - now) / 1000));
     if (left <= 0) { stop(); toast('Séance terminée 🤍'); return; }
-    const phase = Math.floor((now / 1000) % 10) < 5 ? 'in' : 'out';
-    orb.classList.toggle('in', phase === 'in'); orb.classList.toggle('out', phase === 'out');
-    orb.textContent = phase === 'in' ? 'Inspire…' : 'Expire…';
-    timer.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')} restant`;
+    const elapsed = now - startAt;
+    const ph = (elapsed % (PHASE * 2)) < PHASE ? 'in' : 'out';
+    if (ph !== curPhase) setPhase(ph);
+    const secLeftInPhase = Math.ceil((PHASE - (elapsed % PHASE)) / 1000); // 5..1
+    timer.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')} · ${ph === 'in' ? 'inspire' : 'expire'} ${secLeftInPhase}`;
   }
-  function start() { running = true; toggle.textContent = 'Arrêter'; endAt = Date.now() + 180000; tick(); iv = setInterval(tick, 250); }
-  function stop() { running = false; toggle.textContent = 'Commencer'; clearInterval(iv); orb.classList.remove('in'); orb.classList.add('out'); orb.textContent = 'Prêt·e ?'; timer.textContent = '3 min · 5s inspire / 5s expire'; }
+  function start() {
+    running = true; toggle.textContent = 'Arrêter';
+    startAt = Date.now(); endAt = startAt + 180000; curPhase = null;
+    setPhase('in');          // on démarre toujours par une inspiration complète
+    iv = setInterval(tick, 120);
+    tick();
+  }
+  function stop() {
+    running = false; toggle.textContent = 'Commencer'; clearInterval(iv);
+    curPhase = null; orb.classList.remove('in'); orb.classList.add('out');
+    orb.textContent = 'Prêt·e ?'; timer.textContent = '3 min · 5s inspire / 5s expire';
+  }
   s.append(el('div', { class: 'card pad-lg' },
     el('div', { class: 'breathe-stage' }, orb, timer, toggle),
     el('p', { class: 'small muted center', style: 'margin-top:6px' }, 'Laissez l’air descendre dans le ventre. Rien à forcer : suivez le rythme.')));
