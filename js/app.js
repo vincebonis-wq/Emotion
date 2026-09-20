@@ -392,11 +392,48 @@ function openMenu() {
     el('button', { class: 'btn ghost block', style: 'margin:6px 0', onclick: () => { m.close(); exportData(); } }, '⬇️ Exporter mes données'),
     el('button', { class: 'btn ghost block', style: 'margin:6px 0', onclick: () => { m.close(); importData(); } }, '⬆️ Importer'),
     el('hr', { class: 'sep' }),
+    el('button', { class: 'btn ghost block', style: 'margin:6px 0;color:var(--danger)', onclick: () => { m.close(); confirmReset(); } }, '↺ Réinitialiser (repartir à zéro)'),
     local
       ? el('button', { class: 'btn ghost block', onclick: () => { m.close(); teardown(); showAuth(); } }, '↩︎ Quitter le mode local')
       : el('button', { class: 'btn ghost block', style: 'color:var(--danger)', onclick: () => { m.close(); firebase.auth().signOut(); } }, '↩︎ Se déconnecter'),
   );
   const m = modal(box, { title: 'Menu' });
+}
+
+/* ---------- Réinitialisation (repartir à zéro) ---------- */
+function confirmReset() {
+  const box = el('div', {},
+    el('p', { class: 'small' }, 'Cette action efface toutes tes données : bilans, ateliers, check-ins, objectif, focus, régularité. Tu repartiras du questionnaire de base.'),
+    el('p', { class: 'small muted' }, 'C’est définitif et sans retour. Astuce : tu peux d’abord « Exporter » pour garder une sauvegarde.'),
+    el('div', { class: 'row', style: 'margin-top:14px' },
+      el('button', { class: 'btn ghost', onclick: () => m.close() }, 'Annuler'),
+      el('button', { class: 'btn primary', style: 'background:var(--danger)', onclick: () => { m.close(); doReset(); } }, 'Tout réinitialiser')));
+  const m = modal(box, { title: '↺ Repartir à zéro' });
+}
+async function doReset() {
+  toast('Réinitialisation…');
+  if (State.mode === 'cloud') {
+    try {
+      const snap = await userRef().collection('entries').get();
+      // suppression par lots de 400 (limite Firestore : 500 ops/lot)
+      const docs = snap.docs;
+      for (let i = 0; i < docs.length; i += 400) {
+        const batch = State.db.batch();
+        docs.slice(i, i + 400).forEach((d) => batch.delete(d.ref));
+        await batch.commit();
+      }
+      await userRef().collection('config').doc('app').delete().catch(() => {});
+    } catch (e) { toast('Erreur — réessaie'); return; }
+  } else {
+    LS.setEntries([]); LS.setConfig({});
+  }
+  State.entries = []; State.config = {};
+  // Réinitialise aussi l'apparence par défaut
+  State.prefs = { textScale: 1, theme: 'or', bg: 'ivoire' };
+  savePrefsLocal(); applyTextScale(); applyBg(); applyTheme();
+  navHistory = [];
+  go('bilan');
+  toast('C’est reparti à zéro 🌱');
 }
 
 /* ---------- Export / import ---------- */
