@@ -432,7 +432,7 @@ async function doReset() {
   State.prefs = { textScale: 1, theme: 'or', bg: 'ivoire' };
   savePrefsLocal(); applyTextScale(); applyBg(); applyTheme();
   navHistory = [];
-  go('bilan');
+  currentRoute = 'onboarding'; render();
   toast('C’est reparti à zéro 🌱');
 }
 
@@ -485,12 +485,46 @@ function goTab(tab) { navHistory = []; currentRoute = tab; window.scrollTo(0, 0)
 
 function render() {
   if (!State.mode) return;
+  // Gate : tant que le bilan initial n'est pas fait, on reste sur l'onboarding.
+  const gated = !bilanDone();
+  const tabbar = $('.tabbar'); if (tabbar) tabbar.classList.toggle('hidden', gated);
+  if (gated && !['onboarding', 'bilan', 'bilanresult'].includes(currentRoute)) currentRoute = 'onboarding';
+  if (!gated && currentRoute === 'onboarding') currentRoute = 'home'; // bilan chargé (cloud) → on ouvre
   syncTabbar();
   const s = $('#screen'); s.innerHTML = '';
   if (currentRoute === 'home') return renderHome(s);
+  if (currentRoute === 'onboarding') return viewOnboarding(s);
   if (currentRoute.startsWith('atelier:')) return viewAtelier(s, currentRoute.slice(8));
   const fn = { explore: viewExplore, suivi: viewSuivi, bilan: viewBilan, bilanresult: viewBilanResultRoute, patterns: viewPatterns, shadow: viewShadow, futureself: viewFutureSelf, checkin: viewCheckin, reparenting: viewReparenting, regulation: viewRegulation, awareness: viewAwareness, expressive: viewExpressive }[currentRoute];
   (fn || renderHome)(s);
+}
+
+/* ============================================================
+   Onboarding — bilan obligatoire dès le début (+ intention)
+   ============================================================ */
+function viewOnboarding(s) {
+  s.append(el('div', { class: 'home-hero', style: 'padding-top:20px' },
+    el('div', { class: 'hh-mark', html: OUROBOROS }),
+    el('div', { class: 'hh-hi' }, 'Bienvenue'),
+    el('div', { class: 'hh-date' }, 'Ton espace de travail émotionnel')));
+
+  s.append(el('div', { class: 'ornament' }, el('span', {}, '❦')));
+
+  // 1) Poser l'intention (facultatif mais mis en avant)
+  const ta = el('textarea', { placeholder: 'Ex. Apprendre à accueillir mes émotions sans me juger.', style: 'min-height:80px' });
+  ta.value = State.config.objective || '';
+  s.append(el('div', { class: 'card' },
+    el('div', { class: 'dir-label', style: 'text-align:left' }, '① Poser mon intention'),
+    el('p', { class: 'small muted' }, 'Ton cap intérieur, doux et non chiffré. Il t’accueillera à chaque ouverture.'),
+    ta,
+    el('button', { class: 'btn ghost block', style: 'margin-top:10px', onclick: () => { saveConfig({ objective: ta.value.trim() }); toast('Intention enregistrée ✦'); } }, 'Enregistrer mon intention')));
+
+  // 2) Le bilan (obligatoire)
+  s.append(el('div', { class: 'card' },
+    el('div', { class: 'dir-label', style: 'text-align:left' }, '② Le bilan de départ'),
+    el('p', { class: 'small' }, 'Avant de commencer, on prend un point de repère. Ce bilan (~8 min) révèle tes thèmes et permettra de suivre ton évolution. Il n’y a ni bonne ni mauvaise réponse.'),
+    el('p', { class: 'small muted' }, 'C’est le point de départ de tout le parcours — il est nécessaire pour ouvrir ton espace.'),
+    el('button', { class: 'btn primary block', style: 'margin-top:6px', onclick: () => { currentRoute = 'bilan'; const sc = $('#screen'); sc.innerHTML = ''; runBilan(sc); } }, 'Commencer le bilan')));
 }
 
 function syncTabbar() {
