@@ -984,9 +984,8 @@ function viewReparenting(s) {
    ============================================================ */
 function viewRegulation(s) {
   viewHead(s, 'Régulation', 'Système nerveux · cohérence cardiaque');
-  s.append(el('div', { class: 'card' },
-    el('div', { class: 'teach connect', style: 'margin:0' },
-      el('span', { class: 'tl' }, '⏸️ ' + PAUSE.title), el('div', { class: 'pre' }, PAUSE.body))));
+  s.append(el('details', { class: 'more' }, el('summary', {}, '⏸️ ' + PAUSE.title + ' (rappel)'),
+    el('div', { class: 'more-body' }, el('div', { class: 'pre', style: 'font-size:.9em;line-height:1.7' }, PAUSE.body))));
   const orb = el('div', { class: 'breathe-orb out' }, 'Prêt·e ?');
   const timer = el('div', { class: 'breathe-timer' }, '3 min · 5s inspire / 5s expire');
   let running = false, iv = null, endAt = 0;
@@ -1261,7 +1260,8 @@ function viewAtelier(s, themeId) {
   const decode = el('div', { class: 'card' },
     el('div', { class: 'step-block' }, el('span', { class: 'sb-num' }, '3'), el('span', { class: 'sb-title' }, 'Décoder une situation')),
     el('p', { class: 'small muted' }, 'Prends une situation récente liée à ce thème et traverse-la, étape par étape.'),
-    el('div', { class: 'teach connect' }, el('span', { class: 'tl' }, '⏸️ ' + PAUSE.title), el('div', { class: 'pre' }, PAUSE.body)));
+    el('details', { class: 'more' }, el('summary', {}, '⏸️ ' + PAUSE.title + ' (rappel)'),
+      el('div', { class: 'more-body' }, el('div', { class: 'pre', style: 'font-size:.9em;line-height:1.7' }, PAUSE.body))));
   (window.SITU_FIELDS || []).forEach((f, i) => {
     const ta = el('textarea', { placeholder: f.hint });
     fields[f.k] = ta;

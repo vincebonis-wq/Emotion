@@ -524,3 +524,7 @@ img,svg{max-width:100%}
 .home-hero .hh-mark .mark-img{height:100%;width:auto;margin:0 auto}
 .auth-card .mark{width:auto;height:88px}
 .auth-card .mark .mark-img{height:100%;width:auto;margin:0 auto}
+
+/* v12 — placeholders plus compacts (rentrent dans la case) */
+textarea::placeholder,input::placeholder{font-size:.85em;line-height:1.45;opacity:.75}
+.situ-step textarea{min-height:104px}
