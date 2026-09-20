@@ -528,3 +528,13 @@ img,svg{max-width:100%}
 /* v12 — placeholders plus compacts (rentrent dans la case) */
 textarea::placeholder,input::placeholder{font-size:.85em;line-height:1.45;opacity:.75}
 .situ-step textarea{min-height:104px}
+
+/* v13 — plan du mois, journal, micro-pratique */
+.sb-star{background:transparent;color:var(--accent-deep);border:1px solid var(--accent);font-size:.95em}
+.plan-card{background:linear-gradient(135deg,var(--accent-soft),var(--surface));border-color:var(--accent)}
+.plan-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:.92em}
+.plan-row .plan-k{color:var(--ink-soft);flex:none}
+.plan-row .plan-v{text-align:right;font-weight:500}
+.plan-practice{margin-top:12px;font-size:.9em;line-height:1.6}
+.plan-practice .plan-k{color:var(--ink-soft);font-size:.85em}
+.journal-day{font-family:'Cinzel',serif;font-weight:600;font-size:.9em;color:var(--accent-deep);text-transform:capitalize;margin:18px 2px 8px}

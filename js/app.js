@@ -484,7 +484,8 @@ function render() {
   if (currentRoute === 'onboarding') return viewOnboarding(s);
   if (currentRoute === 'intro') return viewIntro(s);
   if (currentRoute.startsWith('atelier:')) return viewAtelier(s, currentRoute.slice(8));
-  const fn = { explore: viewExplore, suivi: viewSuivi, bilan: viewBilan, bilanresult: viewBilanResultRoute, patterns: viewPatterns, shadow: viewShadow, futureself: viewFutureSelf, checkin: viewCheckin, reparenting: viewReparenting, regulation: viewRegulation, awareness: viewAwareness, expressive: viewExpressive }[currentRoute];
+  if (currentRoute.startsWith('ref:')) return viewRef(s, currentRoute.slice(4));
+  const fn = { explore: viewExplore, suivi: viewSuivi, library: viewLibrary, journal: viewJournal, bilan: viewBilan, bilanresult: viewBilanResultRoute, patterns: viewPatterns, shadow: viewShadow, futureself: viewFutureSelf, checkin: viewCheckin, reparenting: viewReparenting, regulation: viewRegulation, awareness: viewAwareness, expressive: viewExpressive }[currentRoute];
   (fn || renderHome)(s);
 }
 
@@ -500,6 +501,79 @@ function viewIntro(s) {
       el('p', { class: 'lead pre', style: 'margin:0' }, sec.body)));
   });
   s.append(el('button', { class: 'btn primary block', onclick: () => back() }, 'J’ai compris, revenir'));
+}
+
+/* ============================================================
+   Bibliothèque — fiches de référence + approches (#8)
+   ============================================================ */
+function viewLibrary(s) {
+  viewHead(s, 'Bibliothèque', 'Fiches de référence & approches');
+  s.append(el('div', { class: 'sec-head' }, el('h2', {}, 'Fiches')));
+  const grid = el('div', { class: 'modgrid' });
+  (window.REFS || []).forEach((r) => {
+    grid.append(el('button', { class: 'modcard', onclick: () => go('ref:' + r.id) },
+      el('div', { class: 'ic' }, r.ic),
+      el('div', { class: 'nm' }, r.title),
+      el('div', { class: 'ds' }, r.tag)));
+  });
+  s.append(grid);
+
+  s.append(el('div', { class: 'sec-head' }, el('h2', {}, 'Les approches'), el('span', { class: 'small muted' }, 'psychologues & courants')));
+  const wrap = el('div', {});
+  Object.values(window.APPROACHES || {}).forEach((ap) => {
+    wrap.append(el('details', { class: 'approach' },
+      el('summary', {}, el('b', {}, ap.nm), el('span', { class: 'ap-who' }, ' · ' + ap.who)),
+      el('div', { class: 'more-body pre', style: 'font-size:.9em;line-height:1.7' }, ap.body)));
+  });
+  s.append(wrap);
+}
+
+function viewRef(s, id) {
+  const r = (window.REFS || []).find((x) => x.id === id);
+  if (!r) { go('library'); return; }
+  viewHead(s, r.ic + ' ' + r.title, r.tag);
+  r.sections.forEach((sec) => s.append(el('div', { class: 'card' },
+    el('h3', {}, sec.t),
+    el('p', { class: 'lead pre', style: 'margin:0' }, sec.body))));
+  s.append(el('button', { class: 'btn ghost block', onclick: () => back() }, 'Revenir'));
+}
+
+/* ============================================================
+   Mon journal — historique unifié (#5)
+   ============================================================ */
+function entrySummary(e) {
+  switch (e.module) {
+    case 'bilan': return { label: 'Bilan', ic: '📋', txt: 'Indice ' + (e.total != null ? e.total + '/100' : '—') };
+    case 'checkin': return { label: 'Check-in', ic: '🎡', txt: (e.emotion || '') + (e.intensity ? ' · ' + e.intensity + '/10' : '') + (e.note ? ' — ' + e.note : '') };
+    case 'atelier': return { label: 'Atelier · ' + ((THEMES[e.theme] || {}).short || ''), ic: (THEMES[e.theme] || {}).ic || '🎛️', txt: (e.situ && (e.situ.situation || e.situ.feeling)) || ((e.checks ? e.checks.length : 0) + ' reconnaissance(s)') };
+    case 'shadow': return { label: 'Travail de l’ombre', ic: '🌑', txt: e.trait || (e.answers && e.answers.find(Boolean)) || '' };
+    case 'reparenting': return { label: 'Enfant intérieur', ic: '🤍', txt: (e.pillar ? e.pillar + ' — ' : '') + (e.need || '') };
+    case 'regulation': return { label: 'Régulation', ic: '🌬️', txt: e.technique || 'Séance' + (e.note ? ' — ' + e.note : '') };
+    case 'awareness': return { label: 'Conscience de soi', ic: '👁️', txt: e.story || '' };
+    case 'expressive': return { label: 'Journal expressif', ic: '✍️', txt: (e.mood ? 'Humeur ' + e.mood + '/10 — ' : '') + (e.text || '') };
+    case 'futureself': return { label: 'Future Self', ic: '🌱', txt: e.practice || e.grateful || '' };
+    default: return { label: e.module, ic: '•', txt: '' };
+  }
+}
+function viewJournal(s) {
+  viewHead(s, 'Mon journal', 'Toutes mes entrées, jour après jour');
+  const all = State.entries.slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  if (!all.length) { s.append(el('p', { class: 'muted small center', style: 'padding:20px' }, 'Rien encore. Tes exercices apparaîtront ici.')); return; }
+  let lastDay = null;
+  all.forEach((e) => {
+    const day = (e.date || new Date(e.createdAt).toISOString().slice(0, 10));
+    if (day !== lastDay) {
+      lastDay = day;
+      s.append(el('div', { class: 'journal-day' }, new Date(e.createdAt).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })));
+    }
+    const sm = entrySummary(e);
+    const txt = sm.txt ? (sm.txt.length > 140 ? sm.txt.slice(0, 140) + '…' : sm.txt) : '';
+    s.append(el('div', { class: 'log-item' },
+      el('div', { class: 'lh' },
+        el('span', {}, el('span', { class: 'tag' }, sm.ic + ' ' + sm.label), el('span', { class: 'ld', style: 'margin-left:8px' }, new Date(e.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }))),
+        el('button', { class: 'del', onclick: () => { if (confirm('Supprimer cette entrée ?')) delEntry(e.id); } }, 'supprimer')),
+      txt ? el('div', { class: 'pre', style: 'margin-top:6px;font-size:.92em' }, txt) : null));
+  });
 }
 
 /* ============================================================
@@ -693,6 +767,10 @@ function viewExplore(s) {
     el('div', { style: 'font-size:1.6em;flex:none' }, '📖'),
     el('div', {}, el('div', { style: 'font-family:Cinzel,serif;font-weight:600' }, 'Comprendre le travail émotionnel'),
       el('div', { class: 'small muted' }, 'Comment ça marche, la méthode, comment avancer'))));
+  s.append(el('div', { class: 'card', onclick: () => go('library'), style: 'cursor:pointer;display:flex;align-items:center;gap:14px' },
+    el('div', { style: 'font-size:1.6em;flex:none' }, '📚'),
+    el('div', {}, el('div', { style: 'font-family:Cinzel,serif;font-weight:600' }, 'Bibliothèque'),
+      el('div', { class: 'small muted' }, 'Fiches (5 blessures, polyvagale, roue des émotions) & approches'))));
   renderNextStep(s);
   renderBilanTeaser(s);
   renderThemeSection(s);
@@ -712,6 +790,11 @@ function viewSuivi(s) {
   if (lb) { s.append(el('div', { class: 'sec-head' }, el('h2', {}, 'Progression'))); renderProgression(s); }
   s.append(el('div', { class: 'sec-head' }, el('h2', {}, 'Mes patterns')));
   renderPatternsInto(s);
+  s.append(el('div', { class: 'sec-head' }, el('h2', {}, 'Mon journal')));
+  s.append(el('div', { class: 'card', onclick: () => go('journal'), style: 'cursor:pointer;display:flex;align-items:center;gap:14px' },
+    el('div', { style: 'font-size:1.6em;flex:none' }, '📔'),
+    el('div', {}, el('div', { style: 'font-family:Cinzel,serif;font-weight:600' }, 'Voir toutes mes entrées'),
+      el('div', { class: 'small muted' }, State.entries.length + ' entrée' + (State.entries.length > 1 ? 's' : '') + ' · jour après jour'))));
 }
 
 /* Carte « Mon prochain pas » */
@@ -1158,12 +1241,26 @@ function renderBilanResult(s, b) {
       el('div', { class: 'track' }, el('i', { style: `width:${v}%` }))));
   });
   s.append(meters);
+
+  // Plan pour les prochaines semaines (#3)
   const tt = Object.entries(b.scores).sort((a, c) => c[1] - a[1])[0];
-  if (tt) s.append(el('div', { class: 'card' },
-    el('h3', {}, '🌿 Une piste douce'),
-    el('p', { class: 'small' }, 'Ton thème le plus présent : ') ,
-    el('p', { style: 'margin:0 0 12px' }, el('b', {}, THEMES[tt[0]].nm)),
-    el('button', { class: 'btn primary block', onclick: () => go('atelier:' + tt[0]) }, 'Ouvrir l’atelier ' + THEMES[tt[0]].short)));
+  if (tt) {
+    const id = tt[0], t = THEMES[id], a = (window.ATELIERS || {})[id] || {};
+    // définir ce thème comme focus s'il n'y en a pas encore
+    if (!State.config.focus) saveConfig({ focus: id });
+    const plan = el('div', { class: 'card plan-card' },
+      el('div', { class: 'dir-label', style: 'text-align:left' }, '✦ Ton plan pour les prochaines semaines'));
+    plan.append(el('div', { class: 'plan-row' }, el('span', { class: 'plan-k' }, 'Mon intention'),
+      el('span', { class: 'plan-v' }, State.config.objective || 'À poser sur l’accueil')));
+    plan.append(el('div', { class: 'plan-row' }, el('span', { class: 'plan-k' }, 'Thème prioritaire'),
+      el('span', { class: 'plan-v' }, t.ic + ' ' + t.nm)));
+    if (a.reframe) plan.append(el('div', { class: 'reframe', style: 'margin:12px 0 0' },
+      el('span', { class: 'tl' }, '🌱 À me redire'), el('div', {}, a.reframe)));
+    if (a.practice) plan.append(el('div', { class: 'plan-practice' },
+      el('span', { class: 'plan-k' }, 'Ma micro-pratique'), el('div', { class: 'pre', style: 'margin-top:4px' }, a.practice)));
+    plan.append(el('button', { class: 'btn primary block', style: 'margin-top:16px', onclick: () => go('atelier:' + id) }, 'Commencer l’atelier ' + t.short));
+    s.append(plan);
+  }
   s.append(el('button', { class: 'btn ghost block', onclick: () => go('home') }, 'Retour à l’accueil'));
 }
 
@@ -1271,9 +1368,9 @@ function viewAtelier(s, themeId) {
   });
   s.append(decode);
 
-  // 4 — Pratiquer
+  // Pratiquer
   s.append(el('div', { class: 'card' },
-    el('div', { class: 'step-block' }, el('span', { class: 'sb-num' }, '4'), el('span', { class: 'sb-title' }, 'Une micro-pratique')),
+    el('div', { class: 'step-block' }, el('span', { class: 'sb-num sb-star' }, '✦'), el('span', { class: 'sb-title' }, 'Une micro-pratique')),
     el('div', { class: 'affirm', style: 'text-align:left;font-family:Poppins,sans-serif;font-size:.92em' }, a.practice)));
 
   s.append(el('button', { class: 'btn primary block', onclick: async () => {

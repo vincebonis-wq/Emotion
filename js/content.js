@@ -380,3 +380,42 @@ window.THEME_APPROACHES = {
   validation:  ['rogers', 'jung', 'neff', 'lepera'],
   evitement:   ['vanderkolk', 'levine', 'brach', 'lepera'],
 };
+
+/* ============================================================
+   Fiches de référence (accès libre) — #8
+   ============================================================ */
+window.REFS = [
+  {
+    id: 'blessures', title: 'Les 5 blessures', ic: '🩹', tag: 'Lise Bourbeau',
+    sections: [
+      { t: 'De quoi s’agit-il', body: 'Selon Lise Bourbeau, nos souffrances d’adulte s’organisent souvent autour de cinq blessures fondamentales, formées dans l’enfance. À chacune correspond un « masque » : une stratégie de protection développée pour ne plus souffrir. Ces masques nous ont aidés petits, mais adultes, ils nous coupent de notre authenticité. Ce cadre est une carte, pas un verdict : on peut porter plusieurs blessures, à des degrés variables.' },
+      { t: '1. Le rejet — masque du fuyant', body: 'Blessure de celui qui a senti, tôt, qu’il n’avait pas le droit d’exister ou d’être lui-même. Le fuyant se fait discret, s’efface, doute de sa valeur, peut se couper de son corps et des autres pour ne pas risquer d’être rejeté. Au fond : « si je ne me montre pas, on ne peut pas me rejeter. » Chemin : oser prendre sa place, se rappeler qu’on a le droit d’exister, revenir dans le corps.' },
+      { t: '2. L’abandon — masque du dépendant', body: 'Blessure de celui qui a manqué de présence ou de sécurité affective. Le dépendant craint la solitude, cherche le soutien et la réassurance, peut « trop » donner ou s’accrocher, et vivre les séparations douloureusement. Au fond : « ne me laisse pas. » Chemin : apprendre à se sécuriser soi-même, devenir sa propre base fiable, tolérer d’être seul sans se sentir abandonné.' },
+      { t: '3. L’humiliation — masque du masochiste', body: 'Blessure de celui qui s’est senti rabaissé, honteux, ou trop « chargé » du bien-être des autres. Le masochiste se dévoue, s’oublie, se rend utile, a du mal à recevoir et à poser des limites, et peut se punir par la culpabilité. Au fond : « je vaux si je me sacrifie. » Chemin : s’autoriser ses propres besoins et plaisirs, dire non, recevoir sans mériter.' },
+      { t: '4. La trahison — masque du contrôlant', body: 'Blessure de celui dont la confiance a été déçue. Le contrôlant veut tout maîtriser, anticipe, teste, a du mal à déléguer et à faire confiance, et peut devenir fort et directif pour ne plus être pris au dépourvu. Au fond : « si je contrôle, on ne peut plus me trahir. » Chemin : réapprendre à faire confiance, lâcher un peu la maîtrise, accueillir la vulnérabilité.' },
+      { t: '5. L’injustice — masque du rigide', body: 'Blessure de celui qui a grandi avec beaucoup d’exigence ou de froideur. Le rigide vise la perfection, se coupe de ses ressentis, se montre dur avec lui-même, cherche le « juste » et se compare. Au fond : « je vaux si je fais parfaitement. » Chemin : s’autoriser l’imperfection, se reconnecter aux émotions, remplacer l’exigence par la douceur.' },
+      { t: 'Comment travailler avec', body: 'Le but n’est pas de se coller une étiquette, mais de reconnaître, dans une situation qui fait mal, quelle blessure s’active — et donc quel masque prend le relais. Guérir une blessure, ce n’est pas la supprimer : c’est l’accepter et se donner à soi-même la compassion qui a manqué. À chaque fois que tu repères ton masque avec douceur, tu reprends un peu de liberté.' },
+    ],
+  },
+  {
+    id: 'polyvagal', title: 'La théorie polyvagale', ic: '🧠', tag: 'Stephen Porges',
+    sections: [
+      { t: 'L’idée de base', body: 'Notre système nerveux autonome évalue en permanence, sous le seuil de la conscience, si nous sommes en sécurité ou en danger. Porges appelle cela la neuroception. Selon le verdict, le corps bascule dans l’un de trois états — et ces bascules ne sont pas des choix, mais des réflexes de protection hérités de l’évolution.' },
+      { t: 'État 1 — la sécurité (vagal ventral)', body: 'Quand le corps se sent en sécurité, on est calme, présent, ouvert au lien. On peut réfléchir, écouter, créer, se connecter aux autres. C’est l’état dans lequel le travail émotionnel devient possible. Signes : respiration ample, visage détendu, curiosité, chaleur relationnelle.' },
+      { t: 'État 2 — la mobilisation (sympathique)', body: 'Face à une menace perçue, le corps s’active pour combattre ou fuir : le cœur accélère, les muscles se tendent, l’attention se rétrécit. C’est l’état de la réactivité, de l’anxiété, de la colère. Utile face à un vrai danger, il devient épuisant quand l’alarme se déclenche pour des menaces anciennes ou imaginées.' },
+      { t: 'État 3 — le figement (vagal dorsal)', body: 'Quand la menace paraît insurmontable, le corps « débranche » : on se déconnecte, on s’engourdit, on s’effondre, on se sent vide ou dissocié. C’est un frein d’urgence. On le retrouve dans l’évitement, la sidération, la fatigue profonde. Ce n’est ni de la paresse ni de la faiblesse : c’est une protection.' },
+      { t: 'La fenêtre de tolérance', body: 'C’est la zone où l’on peut ressentir une émotion sans déborder ni se couper — l’état de sécurité, assez large pour accueillir l’inconfort. Le trauma et le stress rétrécissent cette fenêtre : on passe vite en mobilisation ou en figement. Tout le travail consiste à l’élargir, doucement, pour supporter davantage sans basculer.' },
+      { t: 'Revenir à la sécurité', body: 'On ne « se raisonne » pas hors d’une alarme : on aide le corps à se sentir en sécurité. Ce qui aide : la respiration lente (surtout l’expiration allongée), une voix douce, la chaleur, le mouvement, l’ancrage par les sens (5-4-3-2-1), et surtout la co-régulation — la présence rassurante d’un autre système nerveux calme. Se rappeler dans quel état on est, sans se juger, est déjà un grand pas.' },
+    ],
+  },
+  {
+    id: 'roue', title: 'La roue des émotions', ic: '🎡', tag: 'nommer pour apaiser',
+    sections: [
+      { t: 'Pourquoi nommer ses émotions', body: 'Mettre un mot précis sur ce qu’on ressent apaise réellement le cerveau : les neurosciences parlent de « name it to tame it » (Dan Siegel). Nommer fait passer l’émotion du cerveau réactif au cerveau réfléchi, et réduit son intensité. On ne peut pas travailler ce qu’on n’a pas d’abord reconnu et nommé.' },
+      { t: 'Émotions primaires et secondaires', body: 'Les émotions primaires sont les premières réponses, brutes : joie, tristesse, peur, colère, dégoût, surprise. Les émotions secondaires viennent par-dessus, souvent pour masquer la première (par exemple, la colère qui recouvre la peur ou la honte). Un travail utile consiste à chercher, sous l’émotion visible, l’émotion plus vulnérable qui se cache dessous.' },
+      { t: 'Les grandes familles', body: 'JOIE : sérénité, gratitude, fierté, enthousiasme — signale l’alignement.\n\nTRISTESSE : mélancolie, solitude, déception, vide — signale une perte, un besoin de réconfort.\n\nPEUR : anxiété, inquiétude, insécurité — signale un danger (réel ou ancien).\n\nCOLÈRE : irritation, frustration, amertume — signale une limite franchie, un besoin non respecté.\n\nHONTE : gêne, culpabilité, embarras — touche l’appartenance et l’estime.' },
+      { t: 'De l’émotion au besoin', body: 'Chaque émotion pointe un besoin. La tristesse appelle le réconfort et le lien ; la peur, la sécurité ; la colère, le respect d’une limite ; la honte, l’acceptation. Après avoir nommé l’émotion, demande-toi : « De quoi ai-je besoin, là, maintenant ? » C’est le pont entre ressentir et prendre soin de soi.' },
+      { t: 'Comment l’utiliser au quotidien', body: 'Plusieurs fois par jour, fais une pause de 30 secondes : « Qu’est-ce que je ressens, et où dans mon corps ? » Choisis le mot le plus juste, note l’intensité. Avec le temps, tu développes ta « granularité émotionnelle » : plus ton vocabulaire est fin, plus tu régules facilement. Le check-in de l’app est fait pour ça.' },
+    ],
+  },
+];
