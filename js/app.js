@@ -941,6 +941,9 @@ function viewReparenting(s) {
    ============================================================ */
 function viewRegulation(s) {
   viewHead(s, 'Régulation', 'Système nerveux · cohérence cardiaque');
+  s.append(el('div', { class: 'card' },
+    el('div', { class: 'teach connect', style: 'margin:0' },
+      el('span', { class: 'tl' }, '⏸️ ' + PAUSE.title), el('div', { class: 'pre' }, PAUSE.body))));
   const orb = el('div', { class: 'breathe-orb out' }, 'Prêt·e ?');
   const timer = el('div', { class: 'breathe-timer' }, '3 min · 5s inspire / 5s expire');
   let running = false, iv = null, endAt = 0;
@@ -1169,8 +1172,12 @@ function viewAtelier(s, themeId) {
     el('span', { class: 'tl' }, '🔎 La croyance centrale'), el('div', {}, el('i', {}, '« ' + a.belief + ' »'))));
   if (a.cycle) comprendre.append(el('div', { class: 'teach cycle' },
     el('span', { class: 'tl' }, '🔄 Le cercle qui l’entretient'), el('div', { class: 'pre' }, a.cycle)));
+  if (a.wound) comprendre.append(el('div', { class: 'teach wound' },
+    el('span', { class: 'tl' }, '🩹 La blessure dessous'), el('div', { class: 'pre' }, a.wound)));
   if (a.jung) comprendre.append(el('div', { class: 'teach jung' },
     el('span', { class: 'tl' }, '☯ Le regard de Jung'), el('div', { class: 'pre' }, a.jung)));
+  if (a.converge) comprendre.append(el('div', { class: 'teach converge' },
+    el('span', { class: 'tl' }, '📚 Ce qu’en disent d’autres approches'), el('div', { class: 'pre' }, a.converge)));
   if (a.connect) comprendre.append(el('div', { class: 'teach connect' },
     el('span', { class: 'tl' }, '🤲 Se connecter avant de transformer'), el('div', { class: 'pre' }, a.connect)));
   if (a.reframe) comprendre.append(el('div', { class: 'reframe' },
@@ -1190,12 +1197,20 @@ function viewAtelier(s, themeId) {
     el('p', { class: 'small muted' }, 'Coche ce qui te parle. Cela nourrit tes patterns.'),
     recWrap));
 
-  // 3 — Écrire
-  const tas = a.prompts.map((p) => ({ p, ta: el('textarea', { placeholder: 'Prends ton temps…' }) }));
-  const writeCard = el('div', { class: 'card' },
-    el('div', { class: 'step-block' }, el('span', { class: 'sb-num' }, '3'), el('span', { class: 'sb-title' }, 'Écrire')));
-  tas.forEach(({ p, ta }) => writeCard.append(el('label', { class: 'field' }, el('span', {}, p), ta)));
-  s.append(writeCard);
+  // 3 — Décoder une situation (méthode structurée)
+  const fields = {};
+  const decode = el('div', { class: 'card' },
+    el('div', { class: 'step-block' }, el('span', { class: 'sb-num' }, '3'), el('span', { class: 'sb-title' }, 'Décoder une situation')),
+    el('p', { class: 'small muted' }, 'Prends une situation récente liée à ce thème et traverse-la, étape par étape.'),
+    el('div', { class: 'teach connect' }, el('span', { class: 'tl' }, '⏸️ ' + PAUSE.title), el('div', { class: 'pre' }, PAUSE.body)));
+  (window.SITU_FIELDS || []).forEach((f, i) => {
+    const ta = el('textarea', { placeholder: f.hint });
+    fields[f.k] = ta;
+    decode.append(el('div', { class: 'situ-step' },
+      el('div', { class: 'situ-label' }, el('span', { class: 'situ-n' }, i + 1), f.label),
+      ta));
+  });
+  s.append(decode);
 
   // 4 — Pratiquer
   s.append(el('div', { class: 'card' },
@@ -1203,7 +1218,9 @@ function viewAtelier(s, themeId) {
     el('div', { class: 'affirm', style: 'text-align:left;font-family:Poppins,sans-serif;font-size:.92em' }, a.practice)));
 
   s.append(el('button', { class: 'btn primary block', onclick: async () => {
-    await addEntry('atelier', { theme: themeId, checks: checks.slice(), answers: tas.map((x) => x.ta.value.trim()) });
+    const situ = {}; Object.keys(fields).forEach((k) => (situ[k] = fields[k].value.trim()));
+    if (!checks.length && !Object.values(situ).some(Boolean)) { toast('Coche ou écris au moins une chose 🌱'); return; }
+    await addEntry('atelier', { theme: themeId, checks: checks.slice(), situ });
     go('atelier:' + themeId);
   } }, 'Enregistrer mon atelier'));
 
@@ -1211,14 +1228,17 @@ function viewAtelier(s, themeId) {
   const past = entriesOf('atelier').filter((e) => e.theme === themeId);
   if (past.length) {
     s.append(el('h3', { style: 'margin:16px 0 8px' }, 'Mes passages sur ce thème'));
+    const labelOf = {}; (window.SITU_FIELDS || []).forEach((f) => (labelOf[f.k] = f.label));
     const wrap = el('div', {});
     past.forEach((e) => {
+      const rows = [];
+      if (e.situ) Object.entries(e.situ).forEach(([k, v]) => { if (v) rows.push(el('div', { class: 'entry' }, el('div', { class: 'em' }, labelOf[k] || k), el('div', { class: 'pre' }, v))); });
+      else if (e.answers) e.answers.filter(Boolean).forEach((ans) => rows.push(el('div', { class: 'entry' }, el('div', { class: 'pre' }, ans))));
       wrap.append(el('div', { class: 'log-item' },
         el('div', { class: 'lh' }, el('span', { class: 'ld' }, fmtDateTime(e.createdAt)),
           el('button', { class: 'del', onclick: () => { if (confirm('Supprimer ?')) delEntry(e.id); } }, 'supprimer')),
         el('div', { class: 'small muted' }, (e.checks ? e.checks.length : 0) + ' reconnaissance(s)'),
-        ...(e.answers || []).filter(Boolean).map((ans, k) => el('div', { class: 'entry' },
-          el('div', { class: 'em' }, a.prompts[k] || ''), el('div', { class: 'pre' }, ans)))));
+        ...rows));
     });
     s.append(wrap);
   }

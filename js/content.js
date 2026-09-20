@@ -17,6 +17,28 @@ window.CONNECT = {
 };
 
 /* ------------------------------------------------------------
+   Le temps de pause (Viktor Frankl) — principe transversal
+   ------------------------------------------------------------ */
+window.PAUSE = {
+  title: 'Le temps de pause',
+  body: 'Dès que quelque chose se déclenche dans ton corps (chaleur, gorge serrée, cœur qui accélère, envie de fuir), c’est LE signal : marque une pause avant de réagir. Reviens au corps, prends 3 respirations lentes, puis regarde la situation autrement.\n\n'
+      + 'Comme l’écrivait Viktor Frankl : « Entre le stimulus et la réponse, il y a un espace. Dans cet espace se trouve notre pouvoir de choisir notre réponse — et dans ce choix, notre liberté. »\n\n'
+      + 'Ce petit temps change tout : il transforme une réaction automatique (l’ancien réflexe de protection) en une réponse consciente, alignée avec qui tu veux être.',
+};
+
+/* ------------------------------------------------------------
+   Méthode structurée pour décoder une situation
+   Reconnaître → Nommer → Comprendre → Transmuter → La prochaine fois
+   ------------------------------------------------------------ */
+window.SITU_FIELDS = [
+  { k: 'situation', label: 'Reconnaître — la situation', hint: 'Décris factuellement ce qui s’est passé (qui, quoi, où, quand), sans interprétation ni jugement. Juste les faits.' },
+  { k: 'feeling',   label: 'Nommer — l’émotion et le corps', hint: 'Quelle(s) émotion(s) exactement ? Où le sens-tu dans ton corps (gorge, poitrine, ventre, mâchoire) ? Nommer précisément apaise déjà.' },
+  { k: 'understand', label: 'Comprendre — ce qui s’est activé', hint: 'Quelle histoire ou croyance s’est allumée ? Quelle blessure ancienne cela touche-t-il ? Qu’est-ce que ta réaction cherchait à protéger ?' },
+  { k: 'transmute', label: 'Transmuter — la vérité plus douce', hint: 'Quelle vérité plus juste et bienveillante peux-tu te redire ? Quel était ton besoin réel, sous l’émotion ?' },
+  { k: 'next',      label: 'La prochaine fois — comment je réagirai', hint: 'Quand cette situation se représentera, comment aimerais-tu répondre ? Quel premier petit geste (pause, respiration, phrase intérieure) t’y aiderait ?' },
+];
+
+/* ------------------------------------------------------------
    Le rôle des émotions (psychologie + Jung), par famille
    ------------------------------------------------------------ */
 window.EMOTION_ROLES = {
@@ -140,6 +162,8 @@ window.ATELIERS = {
     jung: 'Jung dirait que ce que nous refusons de vivre à l’intérieur, nous tentons de le régenter à l’extérieur. Le contrôle est une persona rassurante posée sur une part vulnérable (l’ombre) qu’on n’a pas appris à tenir. Faire la paix avec l’incertitude, c’est réintégrer cette part et retrouver sa force réelle.',
     connect: 'Avant de « lâcher prise » (injonction souvent contre-productive), connecte-toi à ce que tu ressens quand tu ne contrôles pas. Où est la tension dans le corps ? Quelle peur murmure dessous ? On ne relâche pas en forçant : on relâche en rassurant la part qui a peur.',
     reframe: 'Je peux rester présent·e et capable même dans l’incertitude. Ma sécurité vient de ma capacité à me faire face — pas de la maîtrise de tout le dehors.',
+    wound: 'Proche, chez Lise Bourbeau, des blessures d’injustice et de trahison : l’enfant qui n’a pas pu s’appuyer sur un cadre fiable apprend à tout tenir lui-même. Ces repères éclairent, ils n’enferment pas.',
+    converge: 'La théorie polyvagale (Stephen Porges) montre que le contrôle est souvent un système nerveux en hypervigilance. Jon Kabat-Zinn (pleine conscience) et Viktor Frankl rappellent que la vraie liberté naît dans l’espace entre ce qui arrive et notre réponse.',
     recognize: ['Je prépare des plans B (et C) « au cas où ».', 'Déléguer me stresse : je préfère tout faire moi-même.', 'L’incertitude me tient éveillé·e la nuit.', 'Je donne des conseils qu’on ne m’a pas demandés.', 'Quand je ne peux rien faire, je me sens vite impuissant·e.'],
     prompts: ['Quand je cherche à tout contrôler, quelle peur suis-je en train d’éviter de ressentir ?', 'Petit·e, dans quels moments ai-je appris que je devais me débrouiller seul·e ?', 'Quelle petite chose pourrais-je laisser être imparfaite ou incertaine cette semaine ?'],
     practice: 'Choisis UNE situation mineure et laisse-la se dérouler sans intervenir. Une main sur le ventre, dis-toi : « Je peux être en sécurité même sans tout maîtriser. » Observe la sensation, sans la corriger.',
@@ -152,6 +176,8 @@ window.ATELIERS = {
     jung: 'Jung parlerait de projection : nous prêtons aux autres des intentions qui viennent de notre propre critique intérieur. Reprendre ces projections — « ceci parle peut-être plus de moi que de lui » — c’est cesser de donner aux autres le pouvoir de définir notre valeur.',
     connect: 'Quand la blessure s’active, avant de riposter ou de ruminer, sens-la. C’est souvent une vieille douleur d’enfant qui dit « on ne me voit pas ». Accueille-la comme tu accueillerais un enfant blessé, puis regarde les faits avec du recul.',
     reframe: 'Le comportement des autres parle surtout d’eux. Ma valeur ne se remet pas aux voix à chaque interaction.',
+    wound: 'Renvoie souvent aux blessures de rejet et d’injustice (Lise Bourbeau) : l’enfant a appris à se scruter pour savoir s’il était “assez”.',
+    converge: 'La thérapie cognitive (Aaron Beck) nomme cela la personnalisation, une distorsion de pensée. La Communication NonViolente (Marshall Rosenberg) distingue le fait observable de l’interprétation. Brené Brown parle des « histoires qu’on se raconte » et invite à les vérifier.',
     recognize: ['Un silence me semble forcément dirigé contre moi.', 'Je rejoue les conversations en cherchant ce que j’ai « mal fait ».', 'Une critique sur un détail me fait douter de moi entier·ère.', 'Je devine les pensées des autres… en supposant le pire.', 'Le succès des autres me renvoie à mes manques.'],
     prompts: ['Quelle interprétation « c’est contre moi » ai-je eue récemment, et quelle blessure a-t-elle touchée ?', 'Quelles seraient 2 autres explications possibles, sans moi au centre ?', 'Que dirais-je à un enfant qui pense qu’il n’est « pas assez » ?'],
     practice: 'À la prochaine blessure, main sur le cœur, demande : « Et si cela n’avait rien à voir avec moi ? » Écris la réponse la plus vraie et la plus apaisante possible.',
@@ -164,6 +190,8 @@ window.ATELIERS = {
     jung: 'Jung nommerait cela un complexe : un nœud émotionnel chargé, hérité du passé, qui « prend » la personne quand il est activé — on ne réagit plus à la situation présente, mais à toute une histoire. Devenir conscient de son complexe, c’est cesser d’être agi par lui.',
     connect: 'Le travail n’est pas de « se contrôler » par la force, mais de créer un petit espace entre le déclencheur et la réaction — assez pour sentir ce qui se passe vraiment dessous. Trois respirations lentes suffisent souvent à faire redescendre l’alarme et à retrouver le choix.',
     reframe: 'Une incompréhension n’est pas un verdict sur moi. Je peux sentir la vague, respirer, et répondre depuis mes valeurs plutôt que depuis l’alarme.',
+    wound: 'La réactivité n’est pas une blessure en soi, mais l’alarme qui se déclenche quand une blessure (trahison, injustice, rejet) est touchée. Pete Walker décrit les réponses 4F : lutte, fuite, figement, soumission (fawn).',
+    converge: 'Viktor Frankl : « Entre le stimulus et la réponse, il y a un espace ; là se trouve notre pouvoir de choisir. » Dan Siegel : “name it to tame it” — nommer l’émotion calme le cerveau. Stephen Porges : rester dans sa fenêtre de tolérance plutôt que déborder.',
     recognize: ['Je réponds du tac au tac, puis je regrette.', 'Mon corps s’emballe (cœur, chaleur, gorge) très vite.', 'Je passe de calme à submergé·e en quelques secondes.', 'Une incompréhension me donne l’impression qu’on remet en cause ma valeur.', 'Certaines phrases ou certains tons me font “sortir de mes gonds”.'],
     prompts: ['Quel est mon déclencheur le plus fréquent — et à quoi, plus ancien, me renvoie-t-il ?', 'Juste avant de réagir, quelle émotion plus fragile est là (peur, honte, tristesse) ?', 'Quelle valeur profonde ai-je l’impression qu’on attaque, dans ces moments ?'],
     practice: 'La technique STOP : au prochain déclencheur — Stoppe, prends 3 respirations lentes, Observe l’émotion vulnérable dessous, puis choisis ta réponse. Tu n’étouffes rien : tu écoutes d’abord, tu réponds ensuite.',
@@ -176,6 +204,8 @@ window.ATELIERS = {
     jung: 'Jung rappellerait que tant qu’on cherche la sécurité uniquement dehors (dans le regard de l’autre), on reste dépendant. Le chemin est de devenir pour soi la figure sécurisante qui a manqué — un parent intérieur fiable. C’est le début de l’individuation : ne plus se trahir pour être accepté·e.',
     connect: 'Quand la peur monte, ne cours pas la faire taire par une preuve d’amour extérieure. Assieds-toi avec elle. C’est souvent une part très jeune de toi qui pleure. Sa demande n’est pas « qu’on me rassure » mais « qu’on ne me quitte pas » — à commencer par toi.',
     reframe: 'Je mérite d’être aimé·e tel·le que je suis. Rester fidèle à moi n’éloigne pas les bonnes personnes — cela les rapproche.',
+    wound: 'Cœur des blessures de rejet et d’abandon (Lise Bourbeau) : le besoin d’appartenance a été fragilisé tôt, et l’alarme reste sensible.',
+    converge: 'La théorie de l’attachement (John Bowlby, Mary Ainsworth) éclaire ces schémas relationnels. Gabor Maté montre le conflit entre authenticité et attachement — enfant, on s’efface pour rester relié. Peter Levine relie l’insécurité aux mémoires du corps.',
     recognize: ['Je m’adapte beaucoup pour ne pas déplaire.', 'Un changement de ton me fait craindre l’abandon.', 'Je teste parfois les autres pour vérifier qu’ils restent.', 'Je préfère partir avant qu’on me quitte.', 'Seul·e, je me sens vite en insécurité.'],
     prompts: ['Quand ai-je ressenti cette peur de ne pas compter pour la première fois ?', 'Comment est-ce que je m’abandonne moi-même pour ne pas être abandonné·e par les autres ?', 'Que dirais-je, avec tendresse, à l’enfant en moi qui a peur d’être laissé seul ?'],
     practice: 'Écris une phrase de sécurité et relis-la ce soir, main sur le cœur : « Même seul·e, je reste avec moi. Je ne me quitte pas. » Reviens-y chaque fois que la peur monte.',
@@ -188,6 +218,8 @@ window.ATELIERS = {
     jung: 'Jung y verrait une identification à la persona (l’image irréprochable) au détriment du Soi vivant, imparfait et entier. La vraie complétude, pour lui, n’est pas la perfection mais l’intégration de nos ombres et de nos failles. C’est le défaut assumé qui rend humain — et reliant.',
     connect: 'Avant de corriger l’imperfection, sens ce qu’elle réveille : cette petite panique, cette honte diffuse. Accueille-la. Puis rappelle-toi que « suffisamment bien » n’est pas un renoncement : c’est un acte d’amour envers soi.',
     reframe: 'Je vaux indépendamment de mes performances. « Suffisamment bien » fait avancer ; la perfection paralyse.',
+    wound: 'Proche des blessures d’injustice (le “rigide”, exigeant) et d’humiliation (Lise Bourbeau) : la valeur a semblé devoir se mériter.',
+    converge: 'Kristin Neff : l’auto-compassion répare mieux et plus durablement que l’autocritique. Aaron Beck : la pensée « tout ou rien ». Donald Winnicott : le parent « suffisamment bon » (good enough) — imparfait, et c’est justement cela qui sécurise l’enfant.',
     recognize: ['« Assez bien » ne me suffit jamais.', 'Je repousse ou j’évite par peur de mal faire.', 'Je vois d’abord ce qui manque, pas ce qui est réussi.', 'Je me parle plus durement qu’à un ami.', 'Un compliment glisse ; une critique reste des jours.'],
     prompts: ['Qu’est-ce que la perfection est censée m’apporter — ou m’éviter de ressentir ?', 'Si je n’étais pas parfait·e, qu’est-ce que je craindrais qu’il arrive ?', 'Où pourrais-je m’autoriser un « suffisamment bien » cette semaine ?'],
     practice: 'Fais une tâche à 80 % volontairement, puis arrête-toi. Observe l’inconfort sans le corriger, respire, et note : le monde tient-il debout ? Suis-je toujours digne d’estime ?',
@@ -200,6 +232,8 @@ window.ATELIERS = {
     jung: 'Jung distinguerait la culpabilité névrotique (diffuse, héritée, qui ne répare rien) de la conscience morale authentique (précise, qui invite à un ajustement juste). Reprendre son ombre, ici, c’est s’autoriser à exister avec ses propres besoins sans se croire responsable de l’univers émotionnel d’autrui.',
     connect: 'Quand la culpabilité monte sans faute réelle, arrête-toi et sens : souvent, dessous, il y a de la peur (« on va m’en vouloir ») ou une tristesse ancienne. Accueille-la. Puis sépare doucement : qu’est-ce qui m’appartient, qu’est-ce qui appartient à l’autre ?',
     reframe: 'Je peux prendre soin des autres sans me sacrifier. Chacun est responsable de ses propres émotions.',
+    wound: 'Renvoie aux blessures d’humiliation (le “masochiste”, qui se dévoue et s’oublie) et d’abandon (Lise Bourbeau).',
+    converge: 'Pete Walker décrit la réponse “fawn” : se soumettre et faire plaisir pour survivre. Marshall Rosenberg (CNV) réapprend à distinguer ses besoins de ceux des autres. Kristin Neff invite à s’inclure soi-même dans sa propre bienveillance.',
     recognize: ['Je m’excuse même quand je n’y suis pour rien.', 'Dire non me donne mauvaise conscience.', 'Je me sens coupable de me reposer ou de prendre du plaisir.', 'Je porte l’humeur des autres comme si c’était la mienne.', 'J’ai du mal à recevoir sans avoir « mérité ».'],
     prompts: ['De quoi est-ce que je me sens responsable, à tort ?', 'Quelle est la part qui m’appartient vraiment, et celle qui appartient à l’autre ?', 'Quel besoin à moi ai-je l’habitude de sacrifier pour éviter de culpabiliser ?'],
     practice: 'Aujourd’hui, dis un « non » doux, ou laisse une émotion à son propriétaire. Sens la culpabilité monter, respire, laisse-la passer sans agir dessus. Note ce qui se passe — pour toi, et dans la relation.',
@@ -212,6 +246,8 @@ window.ATELIERS = {
     jung: 'Jung verrait une identification à la persona (le masque social qui plaît) coupée du Soi. L’individuation consiste à déplacer le centre de gravité : de « qu’est-ce qu’on pense de moi ? » vers « qu’est-ce qui est vrai pour moi ? ». La stabilité intérieure naît de cette bascule.',
     connect: 'Quand tu cherches un like, un compliment, un accord, arrête-toi une seconde : quelle sensation cherches-tu à apaiser ? Souvent, un vide, une insécurité. Accueille-la, puis offre-toi la reconnaissance que tu allais quémander.',
     reframe: 'Je peux être ma propre source de reconnaissance. L’avis des autres est une information, pas un verdict sur ma valeur.',
+    wound: 'Proche des blessures de rejet et d’abandon (Lise Bourbeau) : l’amour a semblé conditionnel à ce qu’on montrait ou réussissait.',
+    converge: 'Carl Rogers : nous avons besoin d’un regard positif inconditionnel — qu’on peut apprendre à s’offrir. Deci & Ryan (autodétermination) : la motivation intérieure rend plus stable que l’approbation. Jung : sortir de la persona (le masque) vers le Soi.',
     recognize: ['Mon humeur dépend des retours que je reçois.', 'J’ai du mal à décider sans l’avis des autres.', 'Je minimise mes réussites tant qu’on ne les reconnaît pas.', 'Je cherche à plaire même à ceux qui comptent peu.', 'Le silence des autres, je le lis comme un désaveu.'],
     prompts: ['Dans quels moments est-ce que je m’abandonne pour être approuvé·e ?', 'De quoi suis-je fier·ère, indépendamment du regard des autres ?', 'Si personne ne devait jamais le savoir, que choisirais-je de faire ou d’être ?'],
     practice: 'Ce soir, note une chose que tu as bien faite — sans la montrer à personne. Relis-la à voix basse : « Ça compte, même si personne ne le voit. » Tu deviens ta propre source.',
@@ -224,6 +260,8 @@ window.ATELIERS = {
     jung: 'Jung dirait que tout ce qu’on refuse de rendre conscient continue d’agir dans l’ombre et dirige notre vie « sous forme de destin ». Ce qu’on n’accueille pas nous gouverne à notre insu — fatigue, tensions, réactions inexpliquées. Sentir, un peu à la fois, c’est reprendre les rênes.',
     connect: 'Ici, tout le travail EST la connexion. Pas besoin d’analyser : oser sentir, par petites doses, dans un cadre sûr. Une émotion accueillie 90 secondes, sans histoire ajoutée, monte puis redescend. Tu es plus vaste que ce que tu ressens.',
     reframe: 'Je suis plus grand·e que ce que je ressens. Une émotion accueillie monte, culmine, puis passe — je peux la traverser.',
+    wound: 'Souvent lié aux blessures de rejet et d’abandon (Lise Bourbeau) et à un système nerveux en figement (freeze).',
+    converge: 'Bessel van der Kolk : « le corps n’oublie rien » (The Body Keeps the Score). Peter Levine (Somatic Experiencing) : traverser l’émotion par petites doses. Tara Brach : la méthode RAIN — Reconnaître, Accepter, Investiguer, Nourrir. James Gross : réguler plutôt que supprimer.',
     recognize: ['Je me remplis d’activités pour ne pas ressentir.', 'Je « vais bien » un peu trop automatiquement.', 'Je somatise (tensions, fatigue, ventre) sans savoir pourquoi.', 'Je fuis les conversations émotionnelles.', 'Je ne sais pas toujours nommer ce que je ressens.'],
     prompts: ['Quelle émotion est-ce que j’évite le plus en ce moment ?', 'Enfant, qu’apprenais-je à faire de mes émotions ? Qui était là pour les accueillir ?', 'Où cette émotion est-elle logée dans mon corps, si je m’arrête un instant ?'],
     practice: 'Assieds-toi 2 minutes, une main sur la poitrine. Nomme ce qui est là : « Je remarque… ». Accompagne-le comme une vague, rien à réparer. Juste sentir, et rester.',

@@ -433,3 +433,12 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
 .month-grid .mg{aspect-ratio:1;border-radius:6px;background:var(--surface-2)}
 .month-grid .mg.on{background:var(--accent)}
+
+/* v6 — blessure / convergence / exercice structuré */
+.teach.wound{border-left-color:#c58a86}
+.teach.wound .tl{color:#b06d67}
+.teach.converge{border-left-color:var(--accent)}
+.teach.converge .tl{color:var(--accent-deep)}
+.situ-step{margin-bottom:16px}
+.situ-label{display:flex;align-items:center;gap:9px;font-family:'Cinzel',serif;font-weight:600;font-size:.92em;margin-bottom:7px;line-height:1.3}
+.situ-n{flex:none;width:22px;height:22px;border-radius:50%;background:var(--accent-soft);color:var(--accent-deep);display:flex;align-items:center;justify-content:center;font-size:.8em}
