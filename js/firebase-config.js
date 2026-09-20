@@ -14,7 +14,15 @@
 //  d'aide sur l'écran de connexion (aucun compte possible).
 // ============================================================
 
-window.FIREBASE_CONFIG = {
+//  6. (Rappels push, optionnel) Cloud Messaging → générer une paire de
+//     clés Web Push (certificat) et coller la clé publique dans VAPID.
+//
+//  Note : on utilise « self » pour que ce fichier soit lisible à la fois
+//  par la page ET par le service worker de messagerie (self === window
+//  dans la page).
+// ============================================================
+
+self.FIREBASE_CONFIG = {
   apiKey:            "VOTRE_API_KEY",
   authDomain:        "VOTRE_PROJET.firebaseapp.com",
   projectId:         "VOTRE_PROJET",
@@ -23,5 +31,9 @@ window.FIREBASE_CONFIG = {
   appId:             "VOTRE_APP_ID"
 };
 
+// Clé publique Web Push (VAPID) — pour les rappels. Laisser tel quel si non utilisé.
+self.FIREBASE_VAPID = "VOTRE_CLE_VAPID";
+
 // Ne pas modifier : détecte si la config a bien été remplie.
-window.FIREBASE_READY = !String(window.FIREBASE_CONFIG.apiKey).startsWith("VOTRE_");
+self.FIREBASE_READY = !String(self.FIREBASE_CONFIG.apiKey).startsWith("VOTRE_");
+self.FIREBASE_PUSH_READY = self.FIREBASE_READY && !String(self.FIREBASE_VAPID).startsWith("VOTRE_");

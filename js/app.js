@@ -377,6 +377,7 @@ function openMenu() {
   const box = el('div', {},
     el('p', { class: 'small muted' }, local ? '📱 Mode local — sur cet appareil' : State.user.email),
     el('button', { class: 'btn ghost block', style: 'margin:6px 0', onclick: () => { m.close(); openThemePicker(); } }, '🎨 Couleur de l’app'),
+    el('button', { class: 'btn ghost block', style: 'margin:6px 0', onclick: () => { m.close(); openReminders(); } }, '🔔 Rappels quotidiens'),
     el('button', { class: 'btn ghost block', style: 'margin:6px 0', onclick: () => { m.close(); exportData(); } }, '⬇️ Exporter mes données'),
     el('button', { class: 'btn ghost block', style: 'margin:6px 0', onclick: () => { m.close(); importData(); } }, '⬆️ Importer'),
     el('hr', { class: 'sep' }),
@@ -386,6 +387,59 @@ function openMenu() {
       : el('button', { class: 'btn ghost block', style: 'color:var(--danger)', onclick: () => { m.close(); firebase.auth().signOut(); } }, '↩︎ Se déconnecter'),
   );
   const m = modal(box, { title: 'Menu' });
+}
+
+/* ---------- Rappels push (Firebase Cloud Messaging) ---------- */
+function isStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function openReminders() {
+  const box = el('div', {});
+  const note = (icon, txt) => el('div', { class: 'local-cta small', style: 'margin-bottom:10px' }, icon + ' ' + txt);
+
+  // Prérequis
+  if (State.mode !== 'cloud') {
+    box.append(note('☁️', 'Les rappels nécessitent un compte cloud (Firebase). Tu es en mode local : connecte-toi avec un compte pour les activer.'));
+    box.append(el('button', { class: 'btn ghost block', onclick: () => m.close() }, 'Compris'));
+    return void (m = modal(box, { title: '🔔 Rappels quotidiens' }));
+  }
+  if (!window.FIREBASE_PUSH_READY) {
+    box.append(note('⚙️', 'La messagerie push n’est pas encore configurée par le propriétaire (clé Web Push / VAPID manquante — voir README).'));
+    box.append(el('button', { class: 'btn ghost block', onclick: () => m.close() }, 'Compris'));
+    return void (m = modal(box, { title: '🔔 Rappels quotidiens' }));
+  }
+  const iOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (iOS && !isStandalone()) {
+    box.append(note('📲', 'Sur iPhone, les notifications ne fonctionnent qu’une fois l’app installée : Partager → « Sur l’écran d’accueil », puis rouvre l’app depuis l’icône et reviens ici.'));
+    box.append(el('button', { class: 'btn ghost block', onclick: () => m.close() }, 'Compris'));
+    return void (m = modal(box, { title: '🔔 Rappels quotidiens' }));
+  }
+
+  box.append(el('p', { class: 'small muted' }, 'Reçois un rappel doux chaque jour pour prendre un instant pour toi. Tu peux le désactiver quand tu veux.'));
+  const btn = el('button', { class: 'btn primary block', onclick: doEnable }, State.config.reminders ? 'Rappels activés ✓ — réactiver l’appareil' : 'Activer les rappels');
+  box.append(btn);
+  const m0 = modal(box, { title: '🔔 Rappels quotidiens' });
+  var m = m0;
+
+  async function doEnable() {
+    btn.disabled = true; btn.textContent = '…';
+    try {
+      if (!('Notification' in window)) throw new Error('unsupported');
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') { toast('Notifications refusées'); m.close(); return; }
+      const reg = await navigator.serviceWorker.register('firebase-messaging-sw.js');
+      const messaging = firebase.messaging();
+      const token = await messaging.getToken({ vapidKey: self.FIREBASE_VAPID, serviceWorkerRegistration: reg });
+      if (!token) throw new Error('no-token');
+      await userRef().collection('pushTokens').doc(token).set({ createdAt: Date.now(), ua: navigator.userAgent, tz: Intl.DateTimeFormat().resolvedOptions().timeZone || '' });
+      await saveConfig({ reminders: true });
+      // messages reçus quand l'app est ouverte
+      messaging.onMessage((payload) => { const n = (payload && payload.notification) || {}; toast(n.title || 'Un instant pour toi 🌱'); });
+      m.close(); toast('Rappels activés 🔔');
+    } catch (e) {
+      m.close(); toast('Impossible d’activer ici');
+    }
+  }
 }
 
 /* ---------- Réinitialisation (repartir à zéro) ---------- */

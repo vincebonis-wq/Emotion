@@ -87,6 +87,65 @@ service cloud.firestore {
 }
 ```
 
+### 3) Rappels push quotidiens (optionnel)
+
+Les rappels *app fermée* exigent : (a) l'app **installée** sur l'écran
+d'accueil (obligatoire sur iPhone), (b) **Firebase Cloud Messaging**, et
+(c) un **planificateur** qui envoie le message chaque jour.
+
+**Côté app (déjà codé) :**
+1. `Firebase → Cloud Messaging` : dans les *Paramètres du projet → Cloud
+   Messaging → Web Push certificates*, génère une paire de clés et copie
+   la **clé publique**.
+2. Colle-la dans [`js/firebase-config.js`](js/firebase-config.js) →
+   `self.FIREBASE_VAPID = "…"`. Committer + pousser.
+3. Dans l'app (installée, connecté·e en cloud) : menu ⋯ → **🔔 Rappels
+   quotidiens → Activer**. Le jeton de l'appareil est enregistré sous
+   `users/{uid}/pushTokens`.
+
+**Côté envoi quotidien** — il faut un petit programme qui, chaque matin,
+lit les jetons et envoie via l'API Admin FCM. Le plus simple : une
+**Cloud Function planifiée** (nécessite le forfait **Blaze**, quasi
+gratuit à ce volume). Exemple :
+
+```js
+// functions/index.js
+const { onSchedule } = require('firebase-functions/v2/scheduler');
+const admin = require('firebase-admin');
+admin.initializeApp();
+
+const MESSAGES = [
+  'Un instant pour toi ? 🌱',
+  'Comment te sens-tu, là, maintenant ?',
+  'Une petite pause douce t’attend.',
+];
+
+exports.dailyReminder = onSchedule(
+  { schedule: '0 9 * * *', timeZone: 'Europe/Paris' }, // 9h chaque jour
+  async () => {
+    const db = admin.firestore();
+    const users = await db.collection('users').listDocuments();
+    for (const u of users) {
+      const toks = await u.collection('pushTokens').get();
+      const tokens = toks.docs.map((d) => d.id);
+      if (!tokens.length) continue;
+      const body = MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
+      await admin.messaging().sendEachForMulticast({
+        tokens,
+        notification: { title: 'Travail émotionnel', body },
+      });
+    }
+  }
+);
+```
+
+Déploiement : `firebase init functions` puis `firebase deploy --only functions`.
+Alternative sans Blaze : n'importe quel serveur/cron (ton PC, un petit VPS)
+qui exécute ce même code avec un compte de service Admin.
+
+> Astuce : `pushTokens` est déjà couvert par la règle d'isolation
+> ci‑dessus (`users/{userId}/**`). Rien à ajouter.
+
 C'est tout. Tant que la config n'est pas remplie, l'écran de connexion affiche
 un message d'aide (aucun compte n'est possible avant).
 
