@@ -1,11 +1,12 @@
 // Service worker — stratégie réseau-d'abord (network-first) avec repli cache.
 // Incrémenter CACHE_VERSION à chaque déploiement pour rafraîchir le cache.
-const CACHE_VERSION = 'emotion-v1';
+const CACHE_VERSION = 'emotion-v2';
 const CORE = [
   './',
   './index.html',
   './css/style.css',
   './js/firebase-config.js',
+  './js/content.js',
   './js/app.js',
   './assets/ouroboros.svg',
   './manifest.webmanifest'

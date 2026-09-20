@@ -12,6 +12,26 @@ Méthode inspirée du travail de **Dr. Nicole LePera** (*How to Do the Work* /
 
 ---
 
+## Le parcours guidé (pour débuter en douceur)
+
+L'accueil propose un fil conducteur **pas à pas** — pensé pour quelqu'un qui
+découvre le travail émotionnel :
+
+- **Mon prochain pas** : une seule carte à la fois guide la découverte
+  (objectif → bilan → check-in → atelier → respiration → patterns).
+- **Le bilan** : questionnaire ~5 min (auto-évaluation + situations
+  imaginaires) → un *indice de réactivité* /100 et un score par thème.
+  **Refaisable** → courbe de progression et comparatif dans le temps.
+- **Ateliers thématiques** guidés (8 thèmes : besoin de contrôle, prendre les
+  choses personnellement, réactivité, peur du rejet, perfectionnisme,
+  culpabilité, besoin de validation, évitement) — chaque atelier : comprendre
+  → se reconnaître (cases) → écrire → une micro-pratique.
+- **Mes patterns** : relie les exercices (émotions, thèmes du bilan, cases
+  cochées, ateliers) pour faire émerger des observations douces.
+- **Exploration libre** : les 6 journaux/pratiques, accessibles à tout moment.
+  Les plus introspectifs se **débloquent après le premier bilan** (jamais
+  bloquant : on peut le faire à la volée).
+
 ## Les modules (v1)
 
 | Module | Rôle |

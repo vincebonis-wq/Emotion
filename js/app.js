@@ -57,7 +57,7 @@ function modal(node, { title } = {}) {
 /* ============================================================
    Thèmes de couleur (doux)
    ============================================================ */
-const THEMES = {
+const PALETTES = {
   sauge:   { nm: 'Sauge',   sw: '#7FA89A', accent: '#7FA89A', deep: '#5E8578', soft: '#E6EFEA', glow: 'rgba(127,168,154,.18)' },
   brume:   { nm: 'Brume',   sw: '#84A9B5', accent: '#84A9B5', deep: '#5F8894', soft: '#E5EEF1', glow: 'rgba(132,169,181,.18)' },
   lavande: { nm: 'Lavande', sw: '#A198C6', accent: '#A198C6', deep: '#7E74A6', soft: '#ECE9F3', glow: 'rgba(161,152,198,.18)' },
@@ -112,7 +112,7 @@ function injectMarks() {
 }
 function applyTextScale() { document.documentElement.style.setProperty('--tscale', State.prefs.textScale); }
 function applyTheme() {
-  const t = THEMES[State.prefs.theme] || THEMES.sauge;
+  const t = PALETTES[State.prefs.theme] || PALETTES.sauge;
   const r = document.documentElement.style;
   r.setProperty('--accent', t.accent);
   r.setProperty('--accent-deep', t.deep);
@@ -224,7 +224,7 @@ function enterAppCloud() {
 function enterAppLocal() {
   State.mode = 'local';
   State.user = { uid: 'local', email: 'Cet appareil' };
-  State.entries = LS.entries();
+  State.entries = LS.entries().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
   State.config = LS.config();
   syncPrefsFromConfig();
   showApp();
@@ -234,7 +234,7 @@ function enterAppLocal() {
 function syncPrefsFromConfig() {
   let changed = false;
   if (typeof State.config.textScale === 'number') { State.prefs.textScale = State.config.textScale; changed = true; }
-  if (State.config.theme && THEMES[State.config.theme]) { State.prefs.theme = State.config.theme; changed = true; }
+  if (State.config.theme && PALETTES[State.config.theme]) { State.prefs.theme = State.config.theme; changed = true; }
   if (changed) { savePrefsLocal(); applyTextScale(); applyTheme(); }
 }
 
@@ -271,6 +271,39 @@ async function saveConfig(patch) {
   else { LS.setConfig(State.config); }
 }
 function entriesOf(module) { return State.entries.filter((e) => e.module === module); }
+function hasEntry(module) { return State.entries.some((e) => e.module === module); }
+function latestBilan() { return entriesOf('bilan')[0] || null; }   // entries triées desc
+function firstBilan() { const b = entriesOf('bilan'); return b[b.length - 1] || null; }
+
+/* Signaux de thèmes agrégés (cross-exercices) : bilan + ateliers + cases cochées */
+function computeThemeSignals() {
+  const sig = {}; Object.keys(THEMES).forEach((k) => (sig[k] = 0));
+  const lb = latestBilan();
+  if (lb && lb.scores) Object.entries(lb.scores).forEach(([k, v]) => { if (sig[k] != null) sig[k] += v; });
+  entriesOf('atelier').forEach((a) => {
+    if (sig[a.theme] == null) return;
+    sig[a.theme] += 12;                          // avoir exploré le thème
+    sig[a.theme] += (a.checks ? a.checks.length : 0) * 6; // cases « je me reconnais »
+  });
+  return sig;
+}
+function topTheme() {
+  const sig = computeThemeSignals();
+  const top = Object.entries(sig).sort((a, b) => b[1] - a[1])[0];
+  return top && top[1] > 0 ? top[0] : null;
+}
+function emotionFreq() {
+  const f = {};
+  entriesOf('checkin').forEach((e) => { if (e.emotion) f[e.emotion] = (f[e.emotion] || 0) + 1; });
+  return Object.entries(f).sort((a, b) => b[1] - a[1]);
+}
+
+/* Contexte passé au moteur d'étapes (STEPS) */
+function stepCtx() {
+  return { config: State.config, entries: State.entries, go, editObjective, hasEntry, topTheme };
+}
+function currentStep() { return (window.STEPS || []).find((st) => !st.done(stepCtx())); }
+function bilanDone() { return hasEntry('bilan'); }
 
 /* ============================================================
    Chrome (topbar)
@@ -296,7 +329,7 @@ function openTextSize() {
 
 function openThemePicker() {
   const sw = el('div', { class: 'swatches' });
-  Object.entries(THEMES).forEach(([id, t]) => {
+  Object.entries(PALETTES).forEach(([id, t]) => {
     const s = el('button', { class: 'swatch' + (State.prefs.theme === id ? ' on' : ''), title: t.nm,
       style: `background:${t.sw}`, onclick: () => {
         State.prefs.theme = id; applyTheme(); savePrefsLocal(); saveConfig({ theme: id });
@@ -365,7 +398,8 @@ function render() {
   if (!State.mode) return;
   const s = $('#screen'); s.innerHTML = '';
   if (currentRoute === 'home') return renderHome(s);
-  const fn = { futureself: viewFutureSelf, checkin: viewCheckin, reparenting: viewReparenting, regulation: viewRegulation, awareness: viewAwareness, expressive: viewExpressive }[currentRoute];
+  if (currentRoute.startsWith('atelier:')) return viewAtelier(s, currentRoute.slice(8));
+  const fn = { bilan: viewBilan, bilanresult: viewBilanResultRoute, patterns: viewPatterns, futureself: viewFutureSelf, checkin: viewCheckin, reparenting: viewReparenting, regulation: viewRegulation, awareness: viewAwareness, expressive: viewExpressive }[currentRoute];
   (fn || renderHome)(s);
 }
 
@@ -397,15 +431,14 @@ function editObjective() {
   const m = modal(box, { title: 'Mon objectif principal' });
 }
 
-/* ---------- Accueil ---------- */
+/* ---------- Accueil (guidé, en sections) ---------- */
 function renderHome(s) {
   const hour = new Date().getHours();
   const hi = hour < 6 ? 'Douce nuit' : hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonne soirée';
   s.append(el('div', { class: 'greeting' },
     el('div', { class: 'hi' }, hi),
     el('div', { class: 'date' }, fmtDate(new Date())),
-    State.mode === 'local' ? el('span', { class: 'mode-badge' }, '📱 Local') : null,
-  ));
+    State.mode === 'local' ? el('span', { class: 'mode-badge' }, '📱 Local') : null));
 
   renderObjective(s);
 
@@ -414,17 +447,113 @@ function renderHome(s) {
     if (affs.length) s.append(el('div', { class: 'affirm' }, '“' + affs[new Date().getDate() % affs.length] + '”'));
   }
 
-  const grid = el('div', { class: 'modgrid' });
-  Object.entries(MODULES).forEach(([id, m]) => {
-    const n = entriesOf(id).length;
-    grid.append(el('button', { class: 'modcard', onclick: () => go(id) },
-      el('div', { class: 'ic' }, m.ic),
-      el('div', { class: 'nm' }, m.nm),
-      el('div', { class: 'ds' }, m.ds),
-      n ? el('div', { class: 'small muted', style: 'margin-top:2px' }, n + ' entrée' + (n > 1 ? 's' : '')) : null));
+  renderNextStep(s);
+  renderBilanTeaser(s);
+  renderThemeSection(s);
+  renderPatternsTeaser(s);
+  renderExploration(s);
+
+  s.append(el('p', { class: 'small muted center', style: 'margin-top:24px' }, 'Méthode inspirée de Dr. Nicole LePera — How to Do the Work.'));
+}
+
+/* Carte « Mon prochain pas » */
+function renderNextStep(s) {
+  const steps = window.STEPS || [];
+  const step = currentStep();
+  const doneCount = steps.filter((st) => st.done(stepCtx())).length;
+  const prog = el('div', { class: 'ns-progress' });
+  steps.forEach((_, i) => prog.append(el('i', { class: i < doneCount ? 'on' : '' })));
+
+  if (!step) {
+    s.append(el('div', { class: 'nextstep done' },
+      el('div', { class: 'ns-kicker' }, '✦ Parcours de découverte'),
+      el('h2', {}, 'Bravo, tu as fait le tour 🌿'),
+      el('p', {}, 'Tu connais maintenant tous les espaces. Continue à ton rythme — reviens quand tu en as besoin.'),
+      el('button', { class: 'btn', onclick: () => go('patterns') }, 'Revoir mes patterns'),
+      prog));
+    return;
+  }
+  s.append(el('div', { class: 'nextstep' },
+    el('div', { class: 'ns-kicker' }, '✦ Mon prochain pas · étape ' + (doneCount + 1) + '/' + steps.length),
+    el('h2', {}, step.title),
+    el('p', {}, step.desc),
+    el('button', { class: 'btn', onclick: () => step.act(stepCtx()) }, step.cta),
+    prog));
+}
+
+/* Aperçu bilan */
+function renderBilanTeaser(s) {
+  const lb = latestBilan();
+  s.append(el('div', { class: 'sec-head' }, el('h2', {}, 'Bilan & progression'),
+    lb ? el('button', { class: 'link', onclick: () => go('bilan') }, 'Refaire →') : null));
+  if (!lb) {
+    s.append(el('div', { class: 'card', onclick: () => go('bilan'), style: 'cursor:pointer' },
+      el('p', { class: 'small muted', style: 'margin:0' }, '📋 Fais ton premier bilan (~5 min) pour découvrir tes thèmes et suivre ton évolution dans le temps.')));
+    return;
+  }
+  const n = entriesOf('bilan').length;
+  s.append(el('div', { class: 'card', onclick: () => go('bilan'), style: 'cursor:pointer;display:flex;align-items:center;gap:16px' },
+    el('div', { class: 'score-hero', style: 'padding:0' }, el('div', { class: 'big', style: 'font-size:2.2em' }, lb.total), el('div', { class: 'lbl' }, '/100')),
+    el('div', {}, el('div', { style: 'font-weight:500' }, 'Indice de réactivité'),
+      el('div', { class: 'small muted' }, n > 1 ? n + ' bilans · touche pour voir ta courbe' : 'Touche pour revoir ou refaire le bilan'))));
+}
+
+/* Section thèmes / ateliers */
+function renderThemeSection(s) {
+  s.append(el('div', { class: 'sec-head' }, el('h2', {}, 'Explorer un thème'),
+    el('span', { class: 'small muted' }, 'ateliers guidés')));
+  const lb = latestBilan();
+  const tt = topTheme();
+  const grid = el('div', { class: 'themegrid' });
+  const order = Object.keys(THEMES).sort((a, b) => {
+    if (!lb || !lb.scores) return 0;
+    return (lb.scores[b] || 0) - (lb.scores[a] || 0);
+  });
+  order.forEach((id) => {
+    const t = THEMES[id];
+    const done = entriesOf('atelier').some((a) => a.theme === id);
+    grid.append(el('button', { class: 'themecard', onclick: () => go('atelier:' + id) },
+      el('div', { class: 'tic' }, t.ic),
+      el('div', {}, el('div', { class: 'tn' }, t.short + (id === tt ? ' ✦' : '')),
+        el('div', { class: 'td' }, t.desc),
+        done ? el('div', { class: 'done-badge' }, '✓ exploré') : (id === tt ? el('div', { class: 'done-badge' }, 'ton thème principal') : null))));
   });
   s.append(grid);
-  s.append(el('p', { class: 'small muted center', style: 'margin-top:24px' }, 'Méthode inspirée de Dr. Nicole LePera — How to Do the Work.'));
+}
+
+/* Aperçu patterns */
+function renderPatternsTeaser(s) {
+  s.append(el('div', { class: 'sec-head' }, el('h2', {}, 'Mes patterns'),
+    el('button', { class: 'link', onclick: () => go('patterns') }, 'Ouvrir →')));
+  s.append(el('div', { class: 'card', onclick: () => go('patterns'), style: 'cursor:pointer' },
+    el('p', { class: 'small muted', style: 'margin:0' }, '🔗 L’app relie tes exercices pour faire émerger, en douceur, les patterns qui reviennent chez toi.')));
+}
+
+/* Exploration libre (modules) — certains se débloquent après le bilan */
+const ADVANCED = ['awareness', 'expressive'];
+function renderExploration(s) {
+  s.append(el('div', { class: 'sec-head' }, el('h2', {}, 'Exploration libre'),
+    el('span', { class: 'small muted' }, 'journaux & pratiques')));
+  const grid = el('div', { class: 'modgrid' });
+  Object.entries(MODULES).forEach(([id, m]) => {
+    const locked = ADVANCED.includes(id) && !bilanDone();
+    const n = entriesOf(id).length;
+    grid.append(el('button', { class: 'modcard' + (locked ? ' locked' : ''),
+      onclick: () => locked ? offerUnlock(m.nm) : go(id) },
+      el('div', { class: 'ic' }, m.ic),
+      el('div', { class: 'nm' }, m.nm),
+      el('div', { class: 'ds' }, locked ? 'Se débloque après ton premier bilan.' : m.ds),
+      (!locked && n) ? el('div', { class: 'small muted', style: 'margin-top:2px' }, n + ' entrée' + (n > 1 ? 's' : '')) : null));
+  });
+  s.append(grid);
+}
+function offerUnlock(name) {
+  const box = el('div', {},
+    el('p', { class: 'small muted' }, '« ' + name + ' » s’ouvre après ton premier bilan — il aide à mieux relier tes observations. Tu peux le faire maintenant (~5 min).'),
+    el('div', { class: 'row' },
+      el('button', { class: 'btn ghost', onclick: () => m.close() }, 'Plus tard'),
+      el('button', { class: 'btn primary', onclick: () => { m.close(); go('bilan'); } }, 'Faire le bilan')));
+  const m = modal(box, { title: 'Encore une étape 🌿' });
 }
 
 /* ---------- Journal générique ---------- */
@@ -637,6 +766,238 @@ function viewExpressive(s) {
   s.append(entryLog('expressive', (e) => el('div', {},
     el('div', { class: 'small muted' }, 'Humeur : ' + (e.mood || '—') + '/10'),
     el('div', { class: 'ebody pre', style: 'margin-top:6px' }, e.text))));
+}
+
+/* ============================================================
+   Bilan (questionnaire) + résultats + progression
+   ============================================================ */
+function scoreBilan(answers) {
+  // answers: array 0..4 alignée sur BILAN. Score thème = moyenne*25 → 0..100
+  const byTheme = {}, cnt = {};
+  BILAN.forEach((it, i) => {
+    const v = answers[i]; if (v == null) return;
+    byTheme[it.theme] = (byTheme[it.theme] || 0) + v; cnt[it.theme] = (cnt[it.theme] || 0) + 1;
+  });
+  const scores = {};
+  Object.keys(byTheme).forEach((k) => (scores[k] = Math.round((byTheme[k] / cnt[k]) * 25)));
+  const vals = Object.values(scores);
+  const total = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+  return { scores, total };
+}
+
+function viewBilan(s) {
+  const done = hasEntry('bilan');
+  viewHead(s, 'Le bilan', done ? 'Refaire pour mesurer mon évolution' : 'Un point de départ tout doux');
+  // Intro / choix
+  const start = el('div', { class: 'card' },
+    el('p', { class: 'small muted' }, done ? 'Tu as déjà un bilan. En refaire un régulièrement (toutes les 2-4 semaines) permet de voir ton évolution. Il n’y a pas de bonne note — juste toi, à cet instant.' : 'Réponds honnêtement, sans réfléchir trop longtemps. Il n’y a ni bonne ni mauvaise réponse. ~5 min, 16 questions.'),
+    el('button', { class: 'btn primary block', onclick: () => runBilan(s) }, done ? 'Refaire mon bilan' : 'Commencer'));
+  s.append(start);
+  if (done) renderProgression(s);
+}
+
+function runBilan(s) {
+  s.innerHTML = '';
+  viewHead(s, 'Le bilan', 'Réponds avec le cœur');
+  const answers = new Array(BILAN.length).fill(null);
+  let i = 0;
+  const host = el('div', {}); s.append(host);
+
+  function paint() {
+    host.innerHTML = '';
+    const it = BILAN[i];
+    const prog = el('div', { class: 'q-progress' }, el('i', { style: `width:${(i / BILAN.length) * 100}%` }));
+    const card = el('div', { class: 'q-card' },
+      el('div', { class: 'q-count' }, 'Question ' + (i + 1) + ' / ' + BILAN.length),
+      it.scenario ? el('div', { class: 'q-scenario' }, '💭 ' + it.text) : null,
+      el('div', { class: 'q-text' }, it.scenario ? 'À quel point cela te touche ?' : it.text));
+    const scale = el('div', { class: 'q-scale' });
+    BILAN_SCALE.forEach((lbl, v) => {
+      scale.append(el('button', { class: 'q-opt' + (answers[i] === v ? ' sel' : ''), onclick: () => { answers[i] = v; next(); } }, lbl));
+    });
+    card.append(scale);
+    if (i > 0) card.append(el('button', { class: 'btn ghost', style: 'margin-top:16px', onclick: () => { i--; paint(); } }, '‹ Précédent'));
+    host.append(prog, card);
+    window.scrollTo(0, 0);
+  }
+  function next() {
+    setTimeout(async () => {
+      if (i < BILAN.length - 1) { i++; paint(); }
+      else {
+        const { scores, total } = scoreBilan(answers);
+        await addEntry('bilan', { scores, total, answers });
+        go('bilanresult');
+      }
+    }, 140);
+  }
+  paint();
+}
+
+function viewBilanResultRoute(s) {
+  const b = latestBilan();
+  if (!b) return go('bilan');
+  viewHead(s, 'Ton bilan', 'Merci pour cette honnêteté 🤍');
+  renderBilanResult(s, b);
+}
+
+function renderBilanResult(s, b) {
+  s.append(el('div', { class: 'card' },
+    el('div', { class: 'score-hero' }, el('div', { class: 'big' }, b.total), el('div', { class: 'lbl' }, 'indice de réactivité / 100')),
+    el('p', { class: 'small muted center' }, 'Plus l’indice est bas, plus tu te sens apaisé·e face aux situations. Ce n’est pas une note : c’est ta météo intérieure du moment.')));
+  // meters par thème
+  const meters = el('div', { class: 'card' }, el('h3', {}, 'Tes thèmes'));
+  Object.entries(b.scores).sort((a, c) => c[1] - a[1]).forEach(([k, v]) => {
+    meters.append(el('div', { class: 'meter' },
+      el('div', { class: 'ml' }, el('span', {}, THEMES[k].ic + ' ' + THEMES[k].short), el('span', { class: 'mv' }, v + '/100')),
+      el('div', { class: 'track' }, el('i', { style: `width:${v}%` }))));
+  });
+  s.append(meters);
+  const tt = Object.entries(b.scores).sort((a, c) => c[1] - a[1])[0];
+  if (tt) s.append(el('div', { class: 'card' },
+    el('h3', {}, '🌿 Une piste douce'),
+    el('p', { class: 'small' }, 'Ton thème le plus présent : ') ,
+    el('p', { style: 'margin:0 0 12px' }, el('b', {}, THEMES[tt[0]].nm)),
+    el('button', { class: 'btn primary block', onclick: () => go('atelier:' + tt[0]) }, 'Ouvrir l’atelier ' + THEMES[tt[0]].short)));
+  s.append(el('button', { class: 'btn ghost block', onclick: () => go('home') }, 'Retour à l’accueil'));
+}
+
+function renderProgression(s) {
+  const all = entriesOf('bilan').slice().reverse(); // chrono
+  if (all.length < 1) return;
+  const last = all[all.length - 1], first = all[0];
+  // Courbe indice total
+  if (all.length >= 2) {
+    const trend = el('div', { class: 'trend' });
+    all.forEach((b) => trend.append(el('div', { class: 'bar', title: b.total + '/100' }, el('i', { style: `height:${b.total}%` }))));
+    const delta = last.total - first.total;
+    s.append(el('div', { class: 'card' },
+      el('h3', {}, '📉 Mon évolution'),
+      el('p', { class: 'small muted' }, all.length + ' bilans — du premier au dernier.'),
+      trend,
+      el('p', { class: 'small', style: 'margin-top:10px' }, 'Depuis le début : ',
+        el('b', { class: delta <= 0 ? 'delta-down' : 'delta-up' }, (delta <= 0 ? '▼ ' : '▲ ') + Math.abs(delta) + ' pts'),
+        delta < 0 ? ' — tu te sens plus apaisé·e 🌿' : delta > 0 ? ' — une période plus intense, c’est ok.' : ' — stable.')));
+  }
+  // Comparatif par thème premier vs dernier
+  if (last.scores) {
+    const comp = el('div', { class: 'card' }, el('h3', {}, 'Par thème'));
+    Object.entries(last.scores).sort((a, c) => c[1] - a[1]).forEach(([k, v]) => {
+      const fv = first.scores ? (first.scores[k] ?? v) : v; const d = v - fv;
+      comp.append(el('div', { class: 'meter' },
+        el('div', { class: 'ml' }, el('span', {}, THEMES[k].ic + ' ' + THEMES[k].short),
+          el('span', { class: 'mv' }, v + '/100' + (all.length >= 2 && d !== 0 ? '  (' + (d < 0 ? '▼' : '▲') + Math.abs(d) + ')' : ''))),
+        el('div', { class: 'track' }, el('i', { style: `width:${v}%` }))));
+    });
+    s.append(comp);
+  }
+}
+
+/* ============================================================
+   Atelier thématique guidé
+   ============================================================ */
+function viewAtelier(s, themeId) {
+  const t = THEMES[themeId], a = (window.ATELIERS || {})[themeId];
+  if (!t || !a) { go('home'); return; }
+  viewHead(s, t.nm, 'Atelier guidé · ' + t.ic);
+
+  // 1 — Comprendre
+  s.append(el('div', { class: 'card' },
+    el('div', { class: 'step-block' }, el('span', { class: 'sb-num' }, '1'), el('span', { class: 'sb-title' }, 'Comprendre')),
+    el('p', { class: 'small', style: 'line-height:1.7' }, a.intro)));
+
+  // 2 — Se reconnaître (cases)
+  const checks = [];
+  const recWrap = el('div', { class: 'recognize' });
+  a.recognize.forEach((txt, idx) => {
+    const c = el('button', { class: 'check', onclick: () => { c.classList.toggle('on'); const on = c.classList.contains('on'); if (on) checks.push(idx); else checks.splice(checks.indexOf(idx), 1); } },
+      el('span', { class: 'box' }, '✓'), el('span', {}, txt));
+    recWrap.append(c);
+  });
+  s.append(el('div', { class: 'card' },
+    el('div', { class: 'step-block' }, el('span', { class: 'sb-num' }, '2'), el('span', { class: 'sb-title' }, 'Je me reconnais quand…')),
+    el('p', { class: 'small muted' }, 'Coche ce qui te parle. Cela nourrit tes patterns.'),
+    recWrap));
+
+  // 3 — Écrire
+  const tas = a.prompts.map((p) => ({ p, ta: el('textarea', { placeholder: 'Prends ton temps…' }) }));
+  const writeCard = el('div', { class: 'card' },
+    el('div', { class: 'step-block' }, el('span', { class: 'sb-num' }, '3'), el('span', { class: 'sb-title' }, 'Écrire')));
+  tas.forEach(({ p, ta }) => writeCard.append(el('label', { class: 'field' }, el('span', {}, p), ta)));
+  s.append(writeCard);
+
+  // 4 — Pratiquer
+  s.append(el('div', { class: 'card' },
+    el('div', { class: 'step-block' }, el('span', { class: 'sb-num' }, '4'), el('span', { class: 'sb-title' }, 'Une micro-pratique')),
+    el('div', { class: 'affirm', style: 'text-align:left;font-family:Poppins,sans-serif;font-size:.92em' }, a.practice)));
+
+  s.append(el('button', { class: 'btn primary block', onclick: async () => {
+    await addEntry('atelier', { theme: themeId, checks: checks.slice(), answers: tas.map((x) => x.ta.value.trim()) });
+    go('atelier:' + themeId);
+  } }, 'Enregistrer mon atelier'));
+
+  // Historique
+  const past = entriesOf('atelier').filter((e) => e.theme === themeId);
+  if (past.length) {
+    s.append(el('h3', { style: 'margin:16px 0 8px' }, 'Mes passages sur ce thème'));
+    const wrap = el('div', {});
+    past.forEach((e) => {
+      wrap.append(el('div', { class: 'log-item' },
+        el('div', { class: 'lh' }, el('span', { class: 'ld' }, fmtDateTime(e.createdAt)),
+          el('button', { class: 'del', onclick: () => { if (confirm('Supprimer ?')) delEntry(e.id); } }, 'supprimer')),
+        el('div', { class: 'small muted' }, (e.checks ? e.checks.length : 0) + ' reconnaissance(s)'),
+        ...(e.answers || []).filter(Boolean).map((ans, k) => el('div', { class: 'entry' },
+          el('div', { class: 'em' }, a.prompts[k] || ''), el('div', { class: 'pre' }, ans)))));
+    });
+    s.append(wrap);
+  }
+}
+
+/* ============================================================
+   Mes patterns (liens entre exercices)
+   ============================================================ */
+function viewPatterns(s) {
+  viewHead(s, 'Mes patterns', 'Ce qui relie tes exercices');
+  const insights = [];
+  const sig = computeThemeSignals();
+  const ranked = Object.entries(sig).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+  const emos = emotionFreq();
+  const totalData = State.entries.length;
+
+  if (totalData < 3) {
+    s.append(el('div', { class: 'card center' },
+      el('p', { class: 'muted', style: 'margin:0' }, '🌱 Continue à remplir tes exercices (bilan, check-ins, ateliers). Dès que tu auras quelques entrées, les liens apparaîtront ici — en douceur.')));
+    return;
+  }
+  if (ranked.length) insights.push(['🎯', el('span', {}, 'Ton thème le plus présent en ce moment : ', el('b', {}, THEMES[ranked[0][0]].nm), '.')]);
+  if (ranked.length > 1) insights.push(['🔁', el('span', {}, 'Il revient souvent avec ', el('b', {}, THEMES[ranked[1][0]].short), ' — deux facettes d’un même mécanisme, souvent.')]);
+  if (emos.length) insights.push(['💗', el('span', {}, 'L’émotion que tu nommes le plus : ', el('b', {}, emos[0][0]), ' (' + emos[0][1] + '×). La reconnaître, c’est déjà l’apaiser.')]);
+  const bilans = entriesOf('bilan');
+  if (bilans.length >= 2) {
+    const d = bilans[0].total - bilans[bilans.length - 1].total;
+    insights.push([d <= 0 ? '🌿' : '🫂', el('span', {}, 'Depuis ton premier bilan, ton indice a ', el('b', { class: d <= 0 ? 'delta-down' : 'delta-up' }, (d <= 0 ? 'baissé de ' : 'monté de ') + Math.abs(d) + ' pts'), d <= 0 ? '. Ton travail porte 🌱' : '. Une phase plus intense — sois doux·ce avec toi.')]);
+  }
+  const ateliersDone = new Set(entriesOf('atelier').map((a) => a.theme));
+  if (ranked.length && !ateliersDone.has(ranked[0][0])) insights.push(['✨', el('span', {}, 'Piste : l’atelier ', el('b', {}, THEMES[ranked[0][0]].short), ' n’est pas encore fait — il pourrait t’éclairer.')]);
+
+  insights.forEach(([ic, node]) => s.append(el('div', { class: 'insight' }, el('div', { class: 'ii' }, ic), el('div', { class: 'it' }, node))));
+
+  // Carte thèmes (barres)
+  if (ranked.length) {
+    const max = ranked[0][1] || 1;
+    const card = el('div', { class: 'card' }, el('h3', {}, 'Force de tes thèmes'));
+    ranked.forEach(([k, v]) => card.append(el('div', { class: 'meter' },
+      el('div', { class: 'ml' }, el('span', {}, THEMES[k].ic + ' ' + THEMES[k].short), el('span', { class: 'mv' }, '')),
+      el('div', { class: 'track' }, el('i', { style: `width:${Math.round((v / max) * 100)}%` })))));
+    card.append(el('button', { class: 'btn ghost block', style: 'margin-top:8px', onclick: () => go('atelier:' + ranked[0][0]) }, 'Travailler ' + THEMES[ranked[0][0]].short));
+    s.append(card);
+  }
+  // Émotions fréquentes
+  if (emos.length) {
+    const card = el('div', { class: 'card' }, el('h3', {}, 'Émotions les plus nommées'), el('div', { class: 'chips' }));
+    const chips = card.lastChild;
+    emos.slice(0, 8).forEach(([e, n]) => chips.append(el('span', { class: 'chip' }, e + ' · ' + n)));
+    s.append(card);
+  }
 }
 
 /* ---------- Service worker ---------- */
